@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -59,6 +58,7 @@
         .action-buttons {
             display: flex;
             gap: 15px;
+            flex-wrap: wrap;
         }
         
         .btn {
@@ -538,6 +538,18 @@
             gap: 5px;
         }
         
+        .data-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #2a5298;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            z-index: 999;
+        }
+        
         @media (max-width: 992px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -546,6 +558,10 @@
             .header-content {
                 flex-direction: column;
                 gap: 20px;
+            }
+            
+            .action-buttons {
+                justify-content: center;
             }
         }
         
@@ -575,6 +591,15 @@
             .weather-container {
                 grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             }
+            
+            .action-buttons {
+                gap: 10px;
+            }
+            
+            .btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
@@ -598,9 +623,6 @@
                     </button>
                     <button class="btn btn-secondary" id="saveBtn">
                         <i class="fas fa-save"></i> 保存
-                    </button>
-                    <button class="btn btn-secondary" id="loadBtn">
-                        <i class="fas fa-download"></i> 載入
                     </button>
                 </div>
             </div>
@@ -1347,6 +1369,11 @@
     <div class="notification" id="notification">
         內容已保存！
     </div>
+    
+    <!-- 數據狀態顯示 -->
+    <div class="data-status" id="dataStatus">
+        數據已加載
+    </div>
 
     <script>
         // 行程數據存儲
@@ -1408,7 +1435,6 @@
         const shareBtn = document.getElementById('shareBtn');
         const exportBtn = document.getElementById('exportBtn');
         const saveBtn = document.getElementById('saveBtn');
-        const loadBtn = document.getElementById('loadBtn');
         const shareModal = document.getElementById('shareModal');
         const closeModal = document.getElementById('closeModal');
         const copyLinkBtn = document.getElementById('copyLink');
@@ -1417,6 +1443,7 @@
         const lastUpdatedEl = document.getElementById('lastUpdated');
         const notification = document.getElementById('notification');
         const refreshWeatherBtn = document.getElementById('refreshWeather');
+        const dataStatus = document.getElementById('dataStatus');
         
         // 初始化頁面
         function initPage() {
@@ -1431,6 +1458,9 @@
             
             // 生成分享連結
             updateShareLink();
+            
+            // 顯示數據狀態
+            updateDataStatus();
         }
         
         // 渲染天氣預報
@@ -1459,13 +1489,14 @@
             // 分享按鈕
             shareBtn.addEventListener('click', () => {
                 shareModal.style.display = 'flex';
+                updateShareLink();
             });
             
             // 保存按鈕
-            saveBtn.addEventListener('click', saveDataToStorage);
-            
-            // 載入按鈕
-            loadBtn.addEventListener('click', loadDataFromStorage);
+            saveBtn.addEventListener('click', function() {
+                saveDataToStorage();
+                showNotification('行程已保存到本地');
+            });
             
             // 關閉模態框
             closeModal.addEventListener('click', () => {
@@ -1487,8 +1518,8 @@
             document.getElementById('shareWhatsApp').addEventListener('click', shareOnWhatsApp);
             document.getElementById('shareLinkBtn').addEventListener('click', copyShareLink);
             
-            // 導出PDF
-            exportBtn.addEventListener('click', exportToPDF);
+            // 導出PDF - 使用更簡單的方法
+            exportBtn.addEventListener('click', exportToPDFSimple);
             
             // 刷新天氣
             refreshWeatherBtn.addEventListener('click', refreshWeather);
@@ -1505,6 +1536,11 @@
             
             // 內容編輯事件
             document.addEventListener('input', handleContentEdit);
+            
+            // 頁面載入時自動保存數據狀態
+            window.addEventListener('load', function() {
+                updateDataStatus();
+            });
         }
         
         // 切換編輯模式
@@ -1543,126 +1579,245 @@
             editTimeout = setTimeout(() => {
                 saveDataToStorage();
                 updateShareLink();
-            }, 2000);
+            }, 1500);
         }
         
         // 保存數據到本地存儲和數據對象
         function saveDataToStorage() {
-            // 收集所有可編輯的內容
-            const allEditableElements = document.querySelectorAll('.editable, [contenteditable="true"]');
-            
-            // 創建數據結構
-            const savedData = {
-                title: document.getElementById('tripTitle').textContent,
-                subtitle: document.getElementById('tripSubtitle').textContent,
-                overview: {
-                    dates: document.getElementById('tripDates').textContent,
-                    days: document.getElementById('tripDays').textContent,
-                    people: document.getElementById('tripPeople').textContent,
-                    transport: document.getElementById('tripTransport').textContent,
-                    route: document.getElementById('tripRoute').textContent
-                },
-                lastUpdated: new Date().toLocaleDateString('zh-Hant', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                })
-            };
-            
-            // 收集每日行程數據
-            const dayCards = document.querySelectorAll('.day-card');
-            savedData.days = [];
-            
-            dayCards.forEach((card, index) => {
-                const dayTitle = card.querySelector('.day-title').textContent;
-                const dayTheme = card.querySelector('.day-theme').textContent;
-                const activities = [];
+            try {
+                // 收集所有可編輯的內容
+                const savedData = {
+                    title: document.getElementById('tripTitle').textContent,
+                    subtitle: document.getElementById('tripSubtitle').textContent,
+                    overview: {
+                        dates: document.getElementById('tripDates').textContent,
+                        days: document.getElementById('tripDays').textContent,
+                        people: document.getElementById('tripPeople').textContent,
+                        transport: document.getElementById('tripTransport').textContent,
+                        route: document.getElementById('tripRoute').textContent
+                    },
+                    lastUpdated: new Date().toLocaleDateString('zh-Hant', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    })
+                };
                 
-                card.querySelectorAll('.activity-item').forEach(item => {
-                    const time = item.querySelector('.activity-time').textContent;
-                    const desc = item.querySelector('.activity-desc').textContent;
-                    activities.push({ time, desc });
+                // 收集航班信息
+                savedData.flights = {
+                    outbound: Array.from(document.querySelectorAll('#editFlightOut').closest('.card').querySelectorAll('.editable')).map(el => el.textContent),
+                    inbound: Array.from(document.querySelectorAll('#editFlightIn').closest('.card').querySelectorAll('.editable')).map(el => el.textContent)
+                };
+                
+                // 收集每日行程數據
+                const dayCards = document.querySelectorAll('.day-card');
+                savedData.days = [];
+                
+                dayCards.forEach((card, index) => {
+                    const dayTitle = card.querySelector('.day-title').textContent;
+                    const dayTheme = card.querySelector('.day-theme').textContent;
+                    const activities = [];
+                    
+                    card.querySelectorAll('.activity-item').forEach(item => {
+                        const time = item.querySelector('.activity-time').textContent;
+                        const desc = item.querySelector('.activity-desc').textContent;
+                        activities.push({ time, desc });
+                    });
+                    
+                    savedData.days.push({
+                        title: dayTitle,
+                        theme: dayTheme,
+                        activities: activities
+                    });
                 });
                 
-                savedData.days.push({
-                    title: dayTitle,
-                    theme: dayTheme,
-                    activities: activities
+                // 收集其他表格數據
+                savedData.tables = {};
+                document.querySelectorAll('.cost-table').forEach((table, index) => {
+                    const rows = [];
+                    table.querySelectorAll('tr').forEach(row => {
+                        const cells = Array.from(row.querySelectorAll('th, td')).map(cell => cell.textContent);
+                        rows.push(cells);
+                    });
+                    savedData.tables[`table${index}`] = rows;
                 });
-            });
-            
-            // 保存到本地存儲
-            localStorage.setItem('tripData', JSON.stringify(savedData));
-            
-            // 更新頁面顯示的最後修改時間
-            lastUpdatedEl.textContent = savedData.lastUpdated;
-            
-            // 更新tripData對象
-            tripData = savedData;
-            
-            // 更新分享連結
-            updateShareLink();
+                
+                // 保存到本地存儲
+                localStorage.setItem('tripData_v2', JSON.stringify(savedData));
+                
+                // 更新頁面顯示的最後修改時間
+                lastUpdatedEl.textContent = savedData.lastUpdated;
+                
+                // 更新tripData對象
+                tripData = savedData;
+                
+                // 更新數據狀態
+                updateDataStatus();
+                
+                console.log('數據已保存:', savedData);
+                return true;
+            } catch (error) {
+                console.error('保存數據時出錯:', error);
+                showNotification('保存失敗，請稍後再試');
+                return false;
+            }
         }
         
         // 從本地存儲加載數據
         function loadDataFromStorage() {
-            const savedData = localStorage.getItem('tripData');
-            if (savedData) {
-                try {
+            try {
+                const savedData = localStorage.getItem('tripData_v2');
+                if (savedData) {
                     const data = JSON.parse(savedData);
-                    
-                    // 應用保存的數據到頁面
-                    document.getElementById('tripTitle').textContent = data.title;
-                    document.getElementById('tripSubtitle').textContent = data.subtitle;
-                    document.getElementById('tripDates').textContent = data.overview.dates;
-                    document.getElementById('tripDays').textContent = data.overview.days;
-                    document.getElementById('tripPeople').textContent = data.overview.people;
-                    document.getElementById('tripTransport').textContent = data.overview.transport;
-                    document.getElementById('tripRoute').textContent = data.overview.route;
-                    lastUpdatedEl.textContent = data.lastUpdated;
-                    
-                    // 更新每日行程
-                    if (data.days && data.days.length > 0) {
-                        const dayCards = document.querySelectorAll('.day-card');
-                        dayCards.forEach((card, index) => {
-                            if (data.days[index]) {
-                                card.querySelector('.day-title').textContent = data.days[index].title;
-                                card.querySelector('.day-theme').textContent = data.days[index].theme;
-                                
-                                const activities = card.querySelectorAll('.activity-item');
-                                if (data.days[index].activities) {
-                                    data.days[index].activities.forEach((activity, activityIndex) => {
-                                        if (activities[activityIndex]) {
-                                            activities[activityIndex].querySelector('.activity-time').textContent = activity.time;
-                                            activities[activityIndex].querySelector('.activity-desc').textContent = activity.desc;
-                                        }
-                                    });
-                                }
-                            }
-                        });
-                    }
+                    applyDataToPage(data);
                     
                     // 更新tripData對象
                     tripData = data;
                     
                     showNotification('行程數據已載入');
-                } catch (e) {
-                    console.error('無法載入行程數據:', e);
-                    showNotification('載入失敗，請檢查數據格式');
+                    updateDataStatus();
+                    return true;
+                } else {
+                    // 嘗試載入舊版本數據
+                    const oldData = localStorage.getItem('tripData');
+                    if (oldData) {
+                        const data = JSON.parse(oldData);
+                        applyDataToPage(data);
+                        tripData = data;
+                        showNotification('載入舊版本數據');
+                        updateDataStatus();
+                        return true;
+                    }
+                    showNotification('沒有找到保存的行程數據');
+                    return false;
                 }
-            } else {
-                showNotification('沒有找到保存的行程數據');
+            } catch (e) {
+                console.error('無法載入行程數據:', e);
+                showNotification('載入失敗，請檢查數據格式');
+                return false;
+            }
+        }
+        
+        // 將數據應用到頁面
+        function applyDataToPage(data) {
+            // 應用基本數據
+            document.getElementById('tripTitle').textContent = data.title || tripData.title;
+            document.getElementById('tripSubtitle').textContent = data.subtitle || tripData.subtitle;
+            
+            if (data.overview) {
+                document.getElementById('tripDates').textContent = data.overview.dates || tripData.overview.dates;
+                document.getElementById('tripDays').textContent = data.overview.days || tripData.overview.days;
+                document.getElementById('tripPeople').textContent = data.overview.people || tripData.overview.people;
+                document.getElementById('tripTransport').textContent = data.overview.transport || tripData.overview.transport;
+                document.getElementById('tripRoute').textContent = data.overview.route || tripData.overview.route;
+            }
+            
+            if (data.lastUpdated) {
+                lastUpdatedEl.textContent = data.lastUpdated;
+            }
+            
+            // 應用航班信息
+            if (data.flights) {
+                const outboundEditable = document.querySelectorAll('#editFlightOut').closest('.card').querySelectorAll('.editable');
+                if (data.flights.outbound && outboundEditable.length >= data.flights.outbound.length) {
+                    data.flights.outbound.forEach((text, index) => {
+                        if (outboundEditable[index]) {
+                            outboundEditable[index].textContent = text;
+                        }
+                    });
+                }
+                
+                const inboundEditable = document.querySelectorAll('#editFlightIn').closest('.card').querySelectorAll('.editable');
+                if (data.flights.inbound && inboundEditable.length >= data.flights.inbound.length) {
+                    data.flights.inbound.forEach((text, index) => {
+                        if (inboundEditable[index]) {
+                            inboundEditable[index].textContent = text;
+                        }
+                    });
+                }
+            }
+            
+            // 應用每日行程
+            if (data.days && data.days.length > 0) {
+                const dayCards = document.querySelectorAll('.day-card');
+                dayCards.forEach((card, index) => {
+                    if (data.days[index]) {
+                        if (card.querySelector('.day-title')) {
+                            card.querySelector('.day-title').textContent = data.days[index].title;
+                        }
+                        if (card.querySelector('.day-theme')) {
+                            card.querySelector('.day-theme').textContent = data.days[index].theme;
+                        }
+                        
+                        const activities = card.querySelectorAll('.activity-item');
+                        if (data.days[index].activities) {
+                            data.days[index].activities.forEach((activity, activityIndex) => {
+                                if (activities[activityIndex]) {
+                                    if (activities[activityIndex].querySelector('.activity-time')) {
+                                        activities[activityIndex].querySelector('.activity-time').textContent = activity.time;
+                                    }
+                                    if (activities[activityIndex].querySelector('.activity-desc')) {
+                                        activities[activityIndex].querySelector('.activity-desc').textContent = activity.desc;
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+            
+            // 應用表格數據
+            if (data.tables) {
+                const tables = document.querySelectorAll('.cost-table');
+                Object.keys(data.tables).forEach((tableKey, index) => {
+                    if (tables[index]) {
+                        const rows = tables[index].querySelectorAll('tr');
+                        const tableData = data.tables[tableKey];
+                        
+                        tableData.forEach((rowData, rowIndex) => {
+                            if (rows[rowIndex]) {
+                                const cells = rows[rowIndex].querySelectorAll('th, td');
+                                rowData.forEach((cellData, cellIndex) => {
+                                    if (cells[cellIndex]) {
+                                        cells[cellIndex].textContent = cellData;
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // 應用預算總表
+            if (data.budgetTotal) {
+                const budgetTotal = document.querySelector('.budget-total');
+                if (budgetTotal) {
+                    if (budgetTotal.querySelector('.budget-total-label')) {
+                        budgetTotal.querySelector('.budget-total-label').textContent = data.budgetTotal.label || '';
+                    }
+                    if (budgetTotal.querySelector('.budget-total-value')) {
+                        budgetTotal.querySelector('.budget-total-value').textContent = data.budgetTotal.value || '';
+                    }
+                }
             }
         }
         
         // 更新分享連結
         function updateShareLink() {
-            // 創建包含行程數據的分享連結
-            const dataString = encodeURIComponent(JSON.stringify(tripData));
-            const currentUrl = window.location.href.split('?')[0];
-            const shareUrl = `${currentUrl}?trip=${dataString}`;
-            
-            shareableLink.value = shareUrl;
+            try {
+                // 確保tripData是最新的
+                saveDataToStorage();
+                
+                // 創建包含行程數據的分享連結
+                const dataString = encodeURIComponent(JSON.stringify(tripData));
+                const currentUrl = window.location.href.split('?')[0];
+                const shareUrl = `${currentUrl}?trip=${dataString}`;
+                
+                shareableLink.value = shareUrl;
+            } catch (error) {
+                console.error('更新分享連結時出錯:', error);
+                shareableLink.value = window.location.href;
+            }
         }
         
         // 檢查URL參數並加載行程數據
@@ -1673,50 +1828,18 @@
             if (tripParam) {
                 try {
                     const sharedData = JSON.parse(decodeURIComponent(tripParam));
-                    
-                    // 應用共享的數據到頁面
-                    document.getElementById('tripTitle').textContent = sharedData.title;
-                    document.getElementById('tripSubtitle').textContent = sharedData.subtitle;
-                    document.getElementById('tripDates').textContent = sharedData.overview.dates;
-                    document.getElementById('tripDays').textContent = sharedData.overview.days;
-                    document.getElementById('tripPeople').textContent = sharedData.overview.people;
-                    document.getElementById('tripTransport').textContent = sharedData.overview.transport;
-                    document.getElementById('tripRoute').textContent = sharedData.overview.route;
-                    
-                    if (sharedData.lastUpdated) {
-                        lastUpdatedEl.textContent = sharedData.lastUpdated;
-                    }
-                    
-                    // 更新每日行程
-                    if (sharedData.days && sharedData.days.length > 0) {
-                        const dayCards = document.querySelectorAll('.day-card');
-                        dayCards.forEach((card, index) => {
-                            if (sharedData.days[index]) {
-                                card.querySelector('.day-title').textContent = sharedData.days[index].title;
-                                card.querySelector('.day-theme').textContent = sharedData.days[index].theme;
-                                
-                                const activities = card.querySelectorAll('.activity-item');
-                                if (sharedData.days[index].activities) {
-                                    sharedData.days[index].activities.forEach((activity, activityIndex) => {
-                                        if (activities[activityIndex]) {
-                                            activities[activityIndex].querySelector('.activity-time').textContent = activity.time;
-                                            activities[activityIndex].querySelector('.activity-desc').textContent = activity.desc;
-                                        }
-                                    });
-                                }
-                            }
-                        });
-                    }
+                    applyDataToPage(sharedData);
                     
                     // 保存到本地存儲
-                    localStorage.setItem('tripData', JSON.stringify(sharedData));
+                    localStorage.setItem('tripData_v2', JSON.stringify(sharedData));
                     
                     // 更新tripData對象
                     tripData = sharedData;
                     
                     showNotification('已加載共享的行程數據');
+                    updateDataStatus();
                 } catch (e) {
-                    console.error('無法解析行程數據:', e);
+                    console.error('無法解析URL中的行程數據:', e);
                     // 如果無法解析URL參數，嘗試從本地存儲加載
                     loadDataFromStorage();
                 }
@@ -1730,18 +1853,34 @@
         function copyShareLink() {
             shareableLink.select();
             shareableLink.setSelectionRange(0, 99999);
-            document.execCommand('copy');
             
-            const originalText = copyLinkBtn.textContent;
-            copyLinkBtn.textContent = '已複製!';
-            copyLinkBtn.style.backgroundColor = '#4CAF50';
-            
-            showNotification('連結已複製到剪貼簿');
-            
-            setTimeout(() => {
-                copyLinkBtn.textContent = originalText;
-                copyLinkBtn.style.backgroundColor = '#2a5298';
-            }, 2000);
+            try {
+                document.execCommand('copy');
+                const originalText = copyLinkBtn.textContent;
+                copyLinkBtn.textContent = '已複製!';
+                copyLinkBtn.style.backgroundColor = '#4CAF50';
+                
+                showNotification('連結已複製到剪貼簿');
+                
+                setTimeout(() => {
+                    copyLinkBtn.textContent = originalText;
+                    copyLinkBtn.style.backgroundColor = '#2a5298';
+                }, 2000);
+            } catch (err) {
+                // 使用現代 Clipboard API
+                navigator.clipboard.writeText(shareableLink.value).then(() => {
+                    const originalText = copyLinkBtn.textContent;
+                    copyLinkBtn.textContent = '已複製!';
+                    copyLinkBtn.style.backgroundColor = '#4CAF50';
+                    
+                    showNotification('連結已複製到剪貼簿');
+                    
+                    setTimeout(() => {
+                        copyLinkBtn.textContent = originalText;
+                        copyLinkBtn.style.backgroundColor = '#2a5298';
+                    }, 2000);
+                });
+            }
         }
         
         // 分享到Facebook
@@ -1757,8 +1896,8 @@
             window.open(`https://wa.me/?text=${text}`, '_blank');
         }
         
-        // 導出為PDF（改進版，按項目分頁）
-        async function exportToPDF() {
+        // 簡單的PDF導出方法（使用html2canvas）
+        async function exportToPDFSimple() {
             exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在生成PDF...';
             exportBtn.disabled = true;
             
@@ -1767,356 +1906,106 @@
                 const wasEditMode = isEditMode;
                 if (wasEditMode) toggleEditMode();
                 
+                // 隱藏不需要的元素
+                const originalDisplay = [];
+                const elementsToHide = document.querySelectorAll('.action-buttons, .edit-icon, .share-modal, .notification, .data-status');
+                elementsToHide.forEach(el => {
+                    originalDisplay.push({element: el, display: el.style.display});
+                    el.style.display = 'none';
+                });
+                
+                // 為每個主要部分生成PDF頁面
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 
-                // 設置頁面邊距（0.5cm = 5mm）
-                const margin = 5;
-                const pageWidth = 210 - 2 * margin;
-                const pageHeight = 297 - 2 * margin;
-                
-                // 定義字體大小
-                const fontSize = 10;
-                pdf.setFontSize(fontSize);
-                pdf.setFont("helvetica", "normal");
-                
-                // 收集所有卡片內容
+                // 獲取所有卡片
                 const cards = document.querySelectorAll('.card');
-                let currentY = margin;
                 let pageNum = 1;
                 
-                // 添加封面頁
+                // 添加封面
                 pdf.setFillColor(30, 60, 114);
                 pdf.rect(0, 0, 210, 297, 'F');
-                
                 pdf.setTextColor(255, 255, 255);
-                pdf.setFontSize(24);
-                pdf.text("英國17天行程", 105, 100, { align: 'center' });
-                
+                pdf.setFontSize(28);
+                pdf.text("英國17天行程", 105, 120, { align: 'center' });
                 pdf.setFontSize(16);
-                pdf.text(tripData.subtitle, 105, 120, { align: 'center' });
-                
+                pdf.text(tripData.subtitle, 105, 140, { align: 'center' });
                 pdf.setFontSize(12);
-                pdf.text(`最後更新：${tripData.lastUpdated}`, 105, 140, { align: 'center' });
-                
+                pdf.text(`最後更新: ${tripData.lastUpdated}`, 105, 160, { align: 'center' });
                 pdf.setTextColor(255, 126, 95);
-                pdf.setFontSize(14);
-                pdf.text("旅遊行程計劃", 105, 160, { align: 'center' });
-                
-                pdf.setTextColor(255, 255, 255);
-                pdf.setFontSize(10);
-                pdf.text("愛丁堡 → 蘇格蘭高地 → 格拉斯哥 → 湖區 → 利物浦 → 切斯特 → 曼徹斯特", 105, 180, { align: 'center' });
-                
-                pdf.setFontSize(8);
-                pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
+                pdf.text("旅遊行程計劃", 105, 180, { align: 'center' });
                 
                 pageNum++;
                 pdf.addPage();
                 
-                // 遍歷每個卡片
+                // 使用html2canvas將每個卡片轉換為圖片
                 for (let i = 0; i < cards.length; i++) {
                     const card = cards[i];
-                    const cardTitle = card.querySelector('.card-title span').textContent.trim();
                     
                     // 檢查是否需要新頁面
-                    if (currentY > pageHeight - 50) {
-                        pdf.setFontSize(8);
-                        pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
+                    if (i > 0 && i % 2 === 0) {
                         pageNum++;
                         pdf.addPage();
-                        currentY = margin;
                     }
                     
-                    // 添加卡片標題
-                    pdf.setFontSize(14);
-                    pdf.setTextColor(30, 60, 114);
-                    pdf.text(cardTitle, margin, currentY);
-                    currentY += 10;
-                    
-                    // 根據卡片類型處理內容
-                    if (card.classList.contains('trip-overview')) {
-                        // 行程總覽
-                        const overviewItems = card.querySelectorAll('.overview-item');
-                        overviewItems.forEach(item => {
-                            if (currentY > pageHeight - 20) {
-                                pdf.setFontSize(8);
-                                pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
-                                pageNum++;
-                                pdf.addPage();
-                                currentY = margin;
-                            }
-                            
-                            const label = item.querySelector('.overview-label').textContent;
-                            const value = item.querySelector('.overview-value').textContent;
-                            
-                            pdf.setFontSize(10);
-                            pdf.setTextColor(102, 102, 102);
-                            pdf.text(label, margin + 5, currentY);
-                            
-                            pdf.setFontSize(12);
-                            pdf.setTextColor(30, 60, 114);
-                            pdf.text(value, margin + 5, currentY + 6);
-                            
-                            currentY += 20;
-                        });
-                    } else if (card.classList.contains('weather-section')) {
-                        // 天氣預報
-                        const weatherDays = card.querySelectorAll('.weather-day');
-                        let weatherX = margin;
-                        
-                        weatherDays.forEach((day, index) => {
-                            if (index > 0 && index % 4 === 0) {
-                                currentY += 60;
-                                weatherX = margin;
-                            }
-                            
-                            if (currentY > pageHeight - 60) {
-                                pdf.setFontSize(8);
-                                pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
-                                pageNum++;
-                                pdf.addPage();
-                                currentY = margin;
-                                weatherX = margin;
-                            }
-                            
-                            const date = day.querySelector('.weather-date').textContent;
-                            const location = day.querySelector('.weather-location').textContent;
-                            const temp = day.querySelector('.weather-temp').textContent;
-                            const desc = day.querySelector('.weather-desc').textContent;
-                            
-                            // 繪製天氣框
-                            pdf.setDrawColor(200, 200, 200);
-                            pdf.rect(weatherX, currentY, 45, 50);
-                            
-                            pdf.setFontSize(9);
-                            pdf.setTextColor(30, 60, 114);
-                            pdf.text(date, weatherX + 5, currentY + 8);
-                            
-                            pdf.setFontSize(8);
-                            pdf.setTextColor(102, 102, 102);
-                            pdf.text(location, weatherX + 5, currentY + 15);
-                            
-                            pdf.setFontSize(12);
-                            pdf.setTextColor(30, 60, 114);
-                            pdf.text(temp, weatherX + 5, currentY + 30);
-                            
-                            pdf.setFontSize(8);
-                            pdf.text(desc, weatherX + 5, currentY + 40);
-                            
-                            weatherX += 50;
-                            
-                            if ((index + 1) % 4 === 0 || index === weatherDays.length - 1) {
-                                currentY += 60;
-                                weatherX = margin;
-                            }
-                        });
-                    } else if (card.querySelector('.day-card')) {
-                        // 每日行程
-                        const dayCards = card.querySelectorAll('.day-card');
-                        
-                        dayCards.forEach(dayCard => {
-                            // 檢查是否需要新頁面
-                            if (currentY > pageHeight - 100) {
-                                pdf.setFontSize(8);
-                                pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
-                                pageNum++;
-                                pdf.addPage();
-                                currentY = margin;
-                            }
-                            
-                            const dayTitle = dayCard.querySelector('.day-title').textContent;
-                            const dayTheme = dayCard.querySelector('.day-theme').textContent;
-                            
-                            // 添加天數標題
-                            pdf.setFontSize(12);
-                            pdf.setTextColor(30, 60, 114);
-                            pdf.text(dayTitle, margin, currentY);
-                            currentY += 7;
-                            
-                            pdf.setFontSize(10);
-                            pdf.setTextColor(42, 82, 152);
-                            pdf.text(dayTheme, margin, currentY);
-                            currentY += 10;
-                            
-                            // 添加活動
-                            const activities = dayCard.querySelectorAll('.activity-item');
-                            activities.forEach(activity => {
-                                if (currentY > pageHeight - 20) {
-                                    pdf.setFontSize(8);
-                                    pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
-                                    pageNum++;
-                                    pdf.addPage();
-                                    currentY = margin;
-                                }
-                                
-                                const time = activity.querySelector('.activity-time').textContent;
-                                const desc = activity.querySelector('.activity-desc').textContent;
-                                
-                                pdf.setFontSize(9);
-                                pdf.setTextColor(255, 126, 95);
-                                pdf.text(time, margin, currentY);
-                                
-                                pdf.setTextColor(51, 51, 51);
-                                pdf.text(desc, margin + 25, currentY);
-                                
-                                currentY += 7;
-                            });
-                            
-                            currentY += 10; // 天之間的間距
-                        });
-                    } else if (card.querySelector('.cost-table')) {
-                        // 預算表格
-                        const table = card.querySelector('.cost-table');
-                        const rows = table.querySelectorAll('tr');
-                        
-                        rows.forEach(row => {
-                            if (currentY > pageHeight - 20) {
-                                pdf.setFontSize(8);
-                                pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
-                                pageNum++;
-                                pdf.addPage();
-                                currentY = margin;
-                            }
-                            
-                            const cells = row.querySelectorAll('th, td');
-                            let cellX = margin;
-                            
-                            cells.forEach((cell, cellIndex) => {
-                                const text = cell.textContent;
-                                const cellWidth = pageWidth / cells.length;
-                                
-                                pdf.setFontSize(9);
-                                if (cell.tagName === 'TH') {
-                                    pdf.setTextColor(30, 60, 114);
-                                    pdf.setFont("helvetica", "bold");
-                                } else {
-                                    pdf.setTextColor(51, 51, 51);
-                                    pdf.setFont("helvetica", "normal");
-                                }
-                                
-                                pdf.text(text, cellX + 2, currentY);
-                                cellX += cellWidth;
-                            });
-                            
-                            currentY += 8;
+                    try {
+                        const canvas = await html2canvas(card, {
+                            scale: 1.5,
+                            useCORS: true,
+                            logging: false,
+                            backgroundColor: '#ffffff'
                         });
                         
-                        currentY += 10;
+                        const imgData = canvas.toDataURL('image/jpeg', 0.9);
+                        const imgWidth = 190; // A4寬度減去邊距
+                        const imgHeight = (canvas.height * imgWidth) / canvas.width;
                         
-                        // 添加總預算
-                        if (card.querySelector('.budget-total')) {
-                            const budgetTotal = card.querySelector('.budget-total');
-                            const label = budgetTotal.querySelector('.budget-total-label').textContent;
-                            const value = budgetTotal.querySelector('.budget-total-value').textContent;
-                            
-                            pdf.setFontSize(11);
-                            pdf.setTextColor(30, 60, 114);
-                            pdf.text(label, margin, currentY);
-                            
-                            pdf.setFontSize(16);
-                            pdf.setTextColor(255, 126, 95);
-                            pdf.text(value, pageWidth - margin, currentY, { align: 'right' });
-                            
-                            currentY += 15;
+                        // 計算位置（每頁兩個卡片）
+                        const x = 10; // 左邊距
+                        let y;
+                        
+                        if (i % 2 === 0) {
+                            y = 20; // 第一個卡片的位置
+                        } else {
+                            y = 150; // 第二個卡片的位置
                         }
-                    } else if (card.querySelector('.overview-grid')) {
-                        // 其他網格佈局
-                        const gridItems = card.querySelectorAll('.overview-item');
-                        let gridX = margin;
-                        let itemsInRow = 0;
                         
-                        gridItems.forEach((item, index) => {
-                            if (itemsInRow >= 2 || currentY > pageHeight - 50) {
-                                currentY += 30;
-                                gridX = margin;
-                                itemsInRow = 0;
-                            }
-                            
-                            if (currentY > pageHeight - 50) {
-                                pdf.setFontSize(8);
-                                pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
-                                pageNum++;
-                                pdf.addPage();
-                                currentY = margin;
-                                gridX = margin;
-                                itemsInRow = 0;
-                            }
-                            
-                            const label = item.querySelector('.overview-label').textContent;
-                            const value = item.querySelector('.overview-value').textContent;
-                            
-                            // 繪製項目框
-                            pdf.setDrawColor(42, 82, 152);
-                            pdf.setLineWidth(0.5);
-                            pdf.rect(gridX, currentY, pageWidth/2 - 5, 25);
-                            
-                            pdf.setFontSize(9);
-                            pdf.setTextColor(102, 102, 102);
-                            pdf.text(label, gridX + 5, currentY + 8);
-                            
-                            pdf.setFontSize(11);
-                            pdf.setTextColor(30, 60, 114);
-                            pdf.text(value, gridX + 5, currentY + 18);
-                            
-                            gridX += pageWidth/2;
-                            itemsInRow++;
-                            
-                            if (itemsInRow >= 2 || index === gridItems.length - 1) {
-                                currentY += 30;
-                                gridX = margin;
-                                itemsInRow = 0;
-                            }
-                        });
-                    } else if (card.querySelector('.flight-details')) {
-                        // 航班信息
-                        const flightLegs = card.querySelectorAll('.flight-leg');
+                        // 添加圖片到PDF
+                        pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
                         
-                        flightLegs.forEach(leg => {
-                            if (currentY > pageHeight - 30) {
-                                pdf.setFontSize(8);
-                                pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
-                                pageNum++;
-                                pdf.addPage();
-                                currentY = margin;
-                            }
-                            
-                            const route = leg.querySelector('.flight-route').textContent;
-                            const time = leg.querySelector('.flight-time').textContent;
-                            const number = leg.querySelector('.flight-number')?.textContent || '';
-                            
-                            pdf.setFontSize(11);
-                            pdf.setTextColor(30, 60, 114);
-                            pdf.text(route, margin, currentY);
-                            currentY += 6;
-                            
-                            pdf.setFontSize(9);
-                            pdf.setTextColor(102, 102, 102);
-                            pdf.text(time, margin, currentY);
-                            currentY += 6;
-                            
-                            if (number) {
-                                pdf.setFontSize(9);
-                                pdf.setTextColor(42, 82, 152);
-                                pdf.text(number, margin, currentY);
-                                currentY += 6;
-                            }
-                            
-                            currentY += 10;
-                        });
+                    } catch (error) {
+                        console.error(`處理卡片 ${i} 時出錯:`, error);
+                        // 如果無法生成圖片，添加文本替代
+                        const cardTitle = card.querySelector('.card-title span')?.textContent || `卡片 ${i+1}`;
+                        pdf.setFontSize(14);
+                        pdf.setTextColor(30, 60, 114);
+                        pdf.text(cardTitle, 15, 20 + (i % 2) * 130);
                     }
                     
-                    currentY += 15; // 卡片之間的間距
+                    // 如果是最後一個卡片或需要換頁
+                    if (i === cards.length - 1 || i % 2 === 1) {
+                        // 添加頁碼
+                        pdf.setFontSize(10);
+                        pdf.setTextColor(100, 100, 100);
+                        pdf.text(`第 ${pageNum} 頁`, 200, 290, { align: 'right' });
+                        
+                        if (i !== cards.length - 1) {
+                            pageNum++;
+                            pdf.addPage();
+                        }
+                    }
                 }
                 
-                // 添加最後一頁的頁碼
-                pdf.setFontSize(8);
-                pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
-                
-                // 保存PDF
-                pdf.save(`英國旅遊行程-${new Date().toISOString().split('T')[0]}.pdf`);
+                // 恢復隱藏的元素
+                elementsToHide.forEach((el, index) => {
+                    el.style.display = originalDisplay[index].display;
+                });
                 
                 // 恢復編輯模式
                 if (wasEditMode) toggleEditMode();
+                
+                // 保存PDF
+                pdf.save(`英國旅遊行程-${new Date().toISOString().split('T')[0]}.pdf`);
                 
                 exportBtn.innerHTML = '<i class="fas fa-file-pdf"></i> 導出PDF';
                 exportBtn.disabled = false;
@@ -2125,40 +2014,61 @@
                 
             } catch (error) {
                 console.error('PDF生成錯誤:', error);
-                alert('PDF導出失敗，請稍後再試。');
+                
+                // 嘗試更簡單的方法
+                try {
+                    // 使用html2canvas捕獲整個頁面
+                    const element = document.querySelector('.container');
+                    const canvas = await html2canvas(element, {
+                        scale: 1,
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: '#f8f9fa'
+                    });
+                    
+                    const imgData = canvas.toDataURL('image/jpeg', 0.9);
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    
+                    const imgWidth = 210;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    
+                    pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+                    pdf.save(`英國旅遊行程-簡單版-${new Date().toISOString().split('T')[0]}.pdf`);
+                    
+                    showNotification('PDF已導出（簡單版）');
+                } catch (simpleError) {
+                    alert('PDF導出失敗，請確保網路連接正常並稍後再試。錯誤: ' + simpleError.message);
+                }
+                
                 exportBtn.innerHTML = '<i class="fas fa-file-pdf"></i> 導出PDF';
                 exportBtn.disabled = false;
+                
+                // 恢復編輯模式
+                if (isEditMode) toggleEditMode();
             }
         }
         
         // 刷新天氣預報
         function refreshWeather() {
-            // 模擬獲取新天氣數據
             showNotification('正在更新天氣預報...');
             
-            // 模擬API延遲
             setTimeout(() => {
-                // 隨機更新一些天氣數據
                 weatherData.forEach(day => {
-                    // 隨機改變溫度 ±2°C
                     const currentTemp = parseInt(day.temp);
                     const newTemp = Math.max(10, Math.min(25, currentTemp + Math.floor(Math.random() * 5) - 2));
                     day.temp = `${newTemp}°C`;
                     
-                    // 隨機改變天氣描述
                     const conditions = ['晴', '多雲', '多雲時晴', '小雨', '陣雨', '多雲偶雨'];
                     day.desc = conditions[Math.floor(Math.random() * conditions.length)];
                     
-                    // 根據描述更新圖標
                     if (day.desc === '晴') day.icon = 'fa-sun';
                     else if (day.desc.includes('雨')) day.icon = 'fa-cloud-rain';
                     else if (day.desc === '多雲') day.icon = 'fa-cloud';
                     else day.icon = 'fa-cloud-sun';
                 });
                 
-                // 重新渲染天氣
                 renderWeather();
-                
                 showNotification('天氣預報已更新');
             }, 1000);
         }
@@ -2173,6 +2083,13 @@
             }, 3000);
         }
         
+        // 更新數據狀態顯示
+        function updateDataStatus() {
+            const hasData = localStorage.getItem('tripData_v2') || localStorage.getItem('tripData');
+            dataStatus.textContent = hasData ? `數據已保存 (${tripData.lastUpdated})` : '無保存數據';
+            dataStatus.style.backgroundColor = hasData ? '#4CAF50' : '#ff7e5f';
+        }
+        
         // 添加一些互動效果
         document.querySelectorAll('.day-card').forEach(card => {
             card.addEventListener('mouseenter', function() {
@@ -2184,14 +2101,6 @@
                 this.style.transform = 'translateY(0)';
                 this.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.05)';
             });
-        });
-        
-        // 為預算總表添加點擊效果
-        document.querySelector('.budget-total').addEventListener('click', function() {
-            this.style.transform = 'scale(1.02)';
-            setTimeout(() => {
-                this.style.transform = 'scale(1)';
-            }, 200);
         });
         
         // 初始化頁面

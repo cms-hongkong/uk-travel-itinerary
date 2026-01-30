@@ -596,6 +596,12 @@
                     <button class="btn btn-secondary" id="exportBtn">
                         <i class="fas fa-file-pdf"></i> 導出PDF
                     </button>
+                    <button class="btn btn-secondary" id="saveBtn">
+                        <i class="fas fa-save"></i> 保存
+                    </button>
+                    <button class="btn btn-secondary" id="loadBtn">
+                        <i class="fas fa-download"></i> 載入
+                    </button>
                 </div>
             </div>
         </header>
@@ -769,7 +775,7 @@
                     </ul>
                 </div>
                 
-                <!-- 第3天（新增） -->
+                <!-- 第3天 -->
                 <div class="day-card card">
                     <div class="day-header">
                         <h3 class="day-title editable" contenteditable="false">第3天｜7月31日（週五）｜愛丁堡藝術文化</h3>
@@ -855,7 +861,7 @@
                     </ul>
                 </div>
                 
-                <!-- 第8天（新增） -->
+                <!-- 第8天 -->
                 <div class="day-card card">
                     <div class="day-header">
                         <h3 class="day-title editable" contenteditable="false">第8天｜8月5日（週三）｜格拉斯哥藝術科學</h3>
@@ -877,7 +883,7 @@
                     </ul>
                 </div>
                 
-                <!-- 第9天（新增） -->
+                <!-- 第9天 -->
                 <div class="day-card card">
                     <div class="day-header">
                         <h3 class="day-title editable" contenteditable="false">第9天｜8月6日（週四）｜前往湖區</h3>
@@ -903,7 +909,7 @@
                     </ul>
                 </div>
                 
-                <!-- 第10天（新增） -->
+                <!-- 第10天 -->
                 <div class="day-card card">
                     <div class="day-header">
                         <h3 class="day-title editable" contenteditable="false">第10天｜8月7日（週五）｜湖區全日</h3>
@@ -929,7 +935,7 @@
                     </ul>
                 </div>
                 
-                <!-- 第11天（新增） -->
+                <!-- 第11天 -->
                 <div class="day-card card">
                     <div class="day-header">
                         <h3 class="day-title editable" contenteditable="false">第11天｜8月8日（週六）｜前往利物浦</h3>
@@ -955,7 +961,7 @@
                     </ul>
                 </div>
                 
-                <!-- 第12天（新增） -->
+                <!-- 第12天 -->
                 <div class="day-card card">
                     <div class="day-header">
                         <h3 class="day-title editable" contenteditable="false">第12天｜8月9日（週日）｜利物浦全日</h3>
@@ -977,7 +983,7 @@
                     </ul>
                 </div>
                 
-                <!-- 第13天（新增） -->
+                <!-- 第13天 -->
                 <div class="day-card card">
                     <div class="day-header">
                         <h3 class="day-title editable" contenteditable="false">第13天｜8月10日（週一）｜利物浦→切斯特</h3>
@@ -1007,7 +1013,7 @@
                     </ul>
                 </div>
                 
-                <!-- 第14天（新增） -->
+                <!-- 第14天 -->
                 <div class="day-card card">
                     <div class="day-header">
                         <h3 class="day-title editable" contenteditable="false">第14天｜8月11日（週二）｜切斯特全日</h3>
@@ -1029,7 +1035,7 @@
                     </ul>
                 </div>
                 
-                <!-- 第15天（新增） -->
+                <!-- 第15天 -->
                 <div class="day-card card">
                     <div class="day-header">
                         <h3 class="day-title editable" contenteditable="false">第15天｜8月12日（週三）｜切斯特→曼徹斯特</h3>
@@ -1401,6 +1407,8 @@
         const toggleEditBtn = document.getElementById('toggleEditBtn');
         const shareBtn = document.getElementById('shareBtn');
         const exportBtn = document.getElementById('exportBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const loadBtn = document.getElementById('loadBtn');
         const shareModal = document.getElementById('shareModal');
         const closeModal = document.getElementById('closeModal');
         const copyLinkBtn = document.getElementById('copyLink');
@@ -1412,14 +1420,11 @@
         
         // 初始化頁面
         function initPage() {
-            // 加載保存的數據
-            loadSavedData();
+            // 檢查URL參數並加載行程數據
+            checkUrlParams();
             
             // 渲染天氣預報
             renderWeather();
-            
-            // 更新最後修改時間
-            lastUpdatedEl.textContent = tripData.lastUpdated;
             
             // 設置事件監聽器
             setupEventListeners();
@@ -1455,6 +1460,12 @@
             shareBtn.addEventListener('click', () => {
                 shareModal.style.display = 'flex';
             });
+            
+            // 保存按鈕
+            saveBtn.addEventListener('click', saveDataToStorage);
+            
+            // 載入按鈕
+            loadBtn.addEventListener('click', loadDataFromStorage);
             
             // 關閉模態框
             closeModal.addEventListener('click', () => {
@@ -1494,9 +1505,6 @@
             
             // 內容編輯事件
             document.addEventListener('input', handleContentEdit);
-            
-            // 離開頁面前保存數據
-            window.addEventListener('beforeunload', saveData);
         }
         
         // 切換編輯模式
@@ -1521,7 +1529,7 @@
             
             if (!isEditMode) {
                 // 退出編輯模式時保存數據
-                saveData();
+                saveDataToStorage();
                 showNotification('內容已保存');
             }
         }
@@ -1532,52 +1540,118 @@
             
             // 防抖動，減少頻繁保存
             clearTimeout(editTimeout);
-            editTimeout = setTimeout(saveData, 2000);
+            editTimeout = setTimeout(() => {
+                saveDataToStorage();
+                updateShareLink();
+            }, 2000);
         }
         
         // 保存數據到本地存儲和數據對象
-        function saveData() {
-            // 保存到tripData對象
-            tripData.title = document.getElementById('tripTitle').textContent;
-            tripData.subtitle = document.getElementById('tripSubtitle').textContent;
-            tripData.overview.dates = document.getElementById('tripDates').textContent;
-            tripData.overview.days = document.getElementById('tripDays').textContent;
-            tripData.overview.people = document.getElementById('tripPeople').textContent;
-            tripData.overview.transport = document.getElementById('tripTransport').textContent;
-            tripData.overview.route = document.getElementById('tripRoute').textContent;
+        function saveDataToStorage() {
+            // 收集所有可編輯的內容
+            const allEditableElements = document.querySelectorAll('.editable, [contenteditable="true"]');
             
-            // 更新最後修改時間
-            tripData.lastUpdated = new Date().toLocaleDateString('zh-Hant', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
+            // 創建數據結構
+            const savedData = {
+                title: document.getElementById('tripTitle').textContent,
+                subtitle: document.getElementById('tripSubtitle').textContent,
+                overview: {
+                    dates: document.getElementById('tripDates').textContent,
+                    days: document.getElementById('tripDays').textContent,
+                    people: document.getElementById('tripPeople').textContent,
+                    transport: document.getElementById('tripTransport').textContent,
+                    route: document.getElementById('tripRoute').textContent
+                },
+                lastUpdated: new Date().toLocaleDateString('zh-Hant', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                })
+            };
+            
+            // 收集每日行程數據
+            const dayCards = document.querySelectorAll('.day-card');
+            savedData.days = [];
+            
+            dayCards.forEach((card, index) => {
+                const dayTitle = card.querySelector('.day-title').textContent;
+                const dayTheme = card.querySelector('.day-theme').textContent;
+                const activities = [];
+                
+                card.querySelectorAll('.activity-item').forEach(item => {
+                    const time = item.querySelector('.activity-time').textContent;
+                    const desc = item.querySelector('.activity-desc').textContent;
+                    activities.push({ time, desc });
+                });
+                
+                savedData.days.push({
+                    title: dayTitle,
+                    theme: dayTheme,
+                    activities: activities
+                });
             });
             
             // 保存到本地存儲
-            localStorage.setItem('tripData', JSON.stringify(tripData));
+            localStorage.setItem('tripData', JSON.stringify(savedData));
             
             // 更新頁面顯示的最後修改時間
-            lastUpdatedEl.textContent = tripData.lastUpdated;
+            lastUpdatedEl.textContent = savedData.lastUpdated;
+            
+            // 更新tripData對象
+            tripData = savedData;
             
             // 更新分享連結
             updateShareLink();
         }
         
         // 從本地存儲加載數據
-        function loadSavedData() {
+        function loadDataFromStorage() {
             const savedData = localStorage.getItem('tripData');
             if (savedData) {
-                tripData = JSON.parse(savedData);
-                
-                // 應用保存的數據到頁面
-                document.getElementById('tripTitle').textContent = tripData.title;
-                document.getElementById('tripSubtitle').textContent = tripData.subtitle;
-                document.getElementById('tripDates').textContent = tripData.overview.dates;
-                document.getElementById('tripDays').textContent = tripData.overview.days;
-                document.getElementById('tripPeople').textContent = tripData.overview.people;
-                document.getElementById('tripTransport').textContent = tripData.overview.transport;
-                document.getElementById('tripRoute').textContent = tripData.overview.route;
-                lastUpdatedEl.textContent = tripData.lastUpdated;
+                try {
+                    const data = JSON.parse(savedData);
+                    
+                    // 應用保存的數據到頁面
+                    document.getElementById('tripTitle').textContent = data.title;
+                    document.getElementById('tripSubtitle').textContent = data.subtitle;
+                    document.getElementById('tripDates').textContent = data.overview.dates;
+                    document.getElementById('tripDays').textContent = data.overview.days;
+                    document.getElementById('tripPeople').textContent = data.overview.people;
+                    document.getElementById('tripTransport').textContent = data.overview.transport;
+                    document.getElementById('tripRoute').textContent = data.overview.route;
+                    lastUpdatedEl.textContent = data.lastUpdated;
+                    
+                    // 更新每日行程
+                    if (data.days && data.days.length > 0) {
+                        const dayCards = document.querySelectorAll('.day-card');
+                        dayCards.forEach((card, index) => {
+                            if (data.days[index]) {
+                                card.querySelector('.day-title').textContent = data.days[index].title;
+                                card.querySelector('.day-theme').textContent = data.days[index].theme;
+                                
+                                const activities = card.querySelectorAll('.activity-item');
+                                if (data.days[index].activities) {
+                                    data.days[index].activities.forEach((activity, activityIndex) => {
+                                        if (activities[activityIndex]) {
+                                            activities[activityIndex].querySelector('.activity-time').textContent = activity.time;
+                                            activities[activityIndex].querySelector('.activity-desc').textContent = activity.desc;
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
+                    
+                    // 更新tripData對象
+                    tripData = data;
+                    
+                    showNotification('行程數據已載入');
+                } catch (e) {
+                    console.error('無法載入行程數據:', e);
+                    showNotification('載入失敗，請檢查數據格式');
+                }
+            } else {
+                showNotification('沒有找到保存的行程數據');
             }
         }
         
@@ -1599,22 +1673,56 @@
             if (tripParam) {
                 try {
                     const sharedData = JSON.parse(decodeURIComponent(tripParam));
-                    tripData = sharedData;
                     
                     // 應用共享的數據到頁面
-                    document.getElementById('tripTitle').textContent = tripData.title;
-                    document.getElementById('tripSubtitle').textContent = tripData.subtitle;
-                    document.getElementById('tripDates').textContent = tripData.overview.dates;
-                    document.getElementById('tripDays').textContent = tripData.overview.days;
-                    document.getElementById('tripPeople').textContent = tripData.overview.people;
-                    document.getElementById('tripTransport').textContent = tripData.overview.transport;
-                    document.getElementById('tripRoute').textContent = tripData.overview.route;
-                    lastUpdatedEl.textContent = tripData.lastUpdated;
+                    document.getElementById('tripTitle').textContent = sharedData.title;
+                    document.getElementById('tripSubtitle').textContent = sharedData.subtitle;
+                    document.getElementById('tripDates').textContent = sharedData.overview.dates;
+                    document.getElementById('tripDays').textContent = sharedData.overview.days;
+                    document.getElementById('tripPeople').textContent = sharedData.overview.people;
+                    document.getElementById('tripTransport').textContent = sharedData.overview.transport;
+                    document.getElementById('tripRoute').textContent = sharedData.overview.route;
+                    
+                    if (sharedData.lastUpdated) {
+                        lastUpdatedEl.textContent = sharedData.lastUpdated;
+                    }
+                    
+                    // 更新每日行程
+                    if (sharedData.days && sharedData.days.length > 0) {
+                        const dayCards = document.querySelectorAll('.day-card');
+                        dayCards.forEach((card, index) => {
+                            if (sharedData.days[index]) {
+                                card.querySelector('.day-title').textContent = sharedData.days[index].title;
+                                card.querySelector('.day-theme').textContent = sharedData.days[index].theme;
+                                
+                                const activities = card.querySelectorAll('.activity-item');
+                                if (sharedData.days[index].activities) {
+                                    sharedData.days[index].activities.forEach((activity, activityIndex) => {
+                                        if (activities[activityIndex]) {
+                                            activities[activityIndex].querySelector('.activity-time').textContent = activity.time;
+                                            activities[activityIndex].querySelector('.activity-desc').textContent = activity.desc;
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
+                    
+                    // 保存到本地存儲
+                    localStorage.setItem('tripData', JSON.stringify(sharedData));
+                    
+                    // 更新tripData對象
+                    tripData = sharedData;
                     
                     showNotification('已加載共享的行程數據');
                 } catch (e) {
                     console.error('無法解析行程數據:', e);
+                    // 如果無法解析URL參數，嘗試從本地存儲加載
+                    loadDataFromStorage();
                 }
+            } else {
+                // 如果沒有URL參數，嘗試從本地存儲加載
+                loadDataFromStorage();
             }
         }
         
@@ -1649,7 +1757,7 @@
             window.open(`https://wa.me/?text=${text}`, '_blank');
         }
         
-        // 導出為PDF
+        // 導出為PDF（改進版，按項目分頁）
         async function exportToPDF() {
             exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在生成PDF...';
             exportBtn.disabled = true;
@@ -1659,39 +1767,350 @@
                 const wasEditMode = isEditMode;
                 if (wasEditMode) toggleEditMode();
                 
-                // 使用html2canvas將頁面轉換為圖片
-                const element = document.querySelector('.container');
-                const canvas = await html2canvas(element, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false,
-                    backgroundColor: '#f8f9fa',
-                    windowWidth: element.scrollWidth,
-                    windowHeight: element.scrollHeight
-                });
-                
-                // 使用jsPDF創建PDF
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 
-                const imgWidth = 210; // A4寬度
-                const pageHeight = 297; // A4高度
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                // 設置頁面邊距（0.5cm = 5mm）
+                const margin = 5;
+                const pageWidth = 210 - 2 * margin;
+                const pageHeight = 297 - 2 * margin;
                 
-                let heightLeft = imgHeight;
-                let position = 0;
+                // 定義字體大小
+                const fontSize = 10;
+                pdf.setFontSize(fontSize);
+                pdf.setFont("helvetica", "normal");
                 
-                // 添加第一頁
-                pdf.addImage(canvas, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
+                // 收集所有卡片內容
+                const cards = document.querySelectorAll('.card');
+                let currentY = margin;
+                let pageNum = 1;
                 
-                // 如果內容超過一頁，添加更多頁
-                while (heightLeft > 0) {
-                    position = heightLeft - imgHeight;
-                    pdf.addPage();
-                    pdf.addImage(canvas, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
+                // 添加封面頁
+                pdf.setFillColor(30, 60, 114);
+                pdf.rect(0, 0, 210, 297, 'F');
+                
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(24);
+                pdf.text("英國17天行程", 105, 100, { align: 'center' });
+                
+                pdf.setFontSize(16);
+                pdf.text(tripData.subtitle, 105, 120, { align: 'center' });
+                
+                pdf.setFontSize(12);
+                pdf.text(`最後更新：${tripData.lastUpdated}`, 105, 140, { align: 'center' });
+                
+                pdf.setTextColor(255, 126, 95);
+                pdf.setFontSize(14);
+                pdf.text("旅遊行程計劃", 105, 160, { align: 'center' });
+                
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(10);
+                pdf.text("愛丁堡 → 蘇格蘭高地 → 格拉斯哥 → 湖區 → 利物浦 → 切斯特 → 曼徹斯特", 105, 180, { align: 'center' });
+                
+                pdf.setFontSize(8);
+                pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
+                
+                pageNum++;
+                pdf.addPage();
+                
+                // 遍歷每個卡片
+                for (let i = 0; i < cards.length; i++) {
+                    const card = cards[i];
+                    const cardTitle = card.querySelector('.card-title span').textContent.trim();
+                    
+                    // 檢查是否需要新頁面
+                    if (currentY > pageHeight - 50) {
+                        pdf.setFontSize(8);
+                        pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
+                        pageNum++;
+                        pdf.addPage();
+                        currentY = margin;
+                    }
+                    
+                    // 添加卡片標題
+                    pdf.setFontSize(14);
+                    pdf.setTextColor(30, 60, 114);
+                    pdf.text(cardTitle, margin, currentY);
+                    currentY += 10;
+                    
+                    // 根據卡片類型處理內容
+                    if (card.classList.contains('trip-overview')) {
+                        // 行程總覽
+                        const overviewItems = card.querySelectorAll('.overview-item');
+                        overviewItems.forEach(item => {
+                            if (currentY > pageHeight - 20) {
+                                pdf.setFontSize(8);
+                                pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
+                                pageNum++;
+                                pdf.addPage();
+                                currentY = margin;
+                            }
+                            
+                            const label = item.querySelector('.overview-label').textContent;
+                            const value = item.querySelector('.overview-value').textContent;
+                            
+                            pdf.setFontSize(10);
+                            pdf.setTextColor(102, 102, 102);
+                            pdf.text(label, margin + 5, currentY);
+                            
+                            pdf.setFontSize(12);
+                            pdf.setTextColor(30, 60, 114);
+                            pdf.text(value, margin + 5, currentY + 6);
+                            
+                            currentY += 20;
+                        });
+                    } else if (card.classList.contains('weather-section')) {
+                        // 天氣預報
+                        const weatherDays = card.querySelectorAll('.weather-day');
+                        let weatherX = margin;
+                        
+                        weatherDays.forEach((day, index) => {
+                            if (index > 0 && index % 4 === 0) {
+                                currentY += 60;
+                                weatherX = margin;
+                            }
+                            
+                            if (currentY > pageHeight - 60) {
+                                pdf.setFontSize(8);
+                                pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
+                                pageNum++;
+                                pdf.addPage();
+                                currentY = margin;
+                                weatherX = margin;
+                            }
+                            
+                            const date = day.querySelector('.weather-date').textContent;
+                            const location = day.querySelector('.weather-location').textContent;
+                            const temp = day.querySelector('.weather-temp').textContent;
+                            const desc = day.querySelector('.weather-desc').textContent;
+                            
+                            // 繪製天氣框
+                            pdf.setDrawColor(200, 200, 200);
+                            pdf.rect(weatherX, currentY, 45, 50);
+                            
+                            pdf.setFontSize(9);
+                            pdf.setTextColor(30, 60, 114);
+                            pdf.text(date, weatherX + 5, currentY + 8);
+                            
+                            pdf.setFontSize(8);
+                            pdf.setTextColor(102, 102, 102);
+                            pdf.text(location, weatherX + 5, currentY + 15);
+                            
+                            pdf.setFontSize(12);
+                            pdf.setTextColor(30, 60, 114);
+                            pdf.text(temp, weatherX + 5, currentY + 30);
+                            
+                            pdf.setFontSize(8);
+                            pdf.text(desc, weatherX + 5, currentY + 40);
+                            
+                            weatherX += 50;
+                            
+                            if ((index + 1) % 4 === 0 || index === weatherDays.length - 1) {
+                                currentY += 60;
+                                weatherX = margin;
+                            }
+                        });
+                    } else if (card.querySelector('.day-card')) {
+                        // 每日行程
+                        const dayCards = card.querySelectorAll('.day-card');
+                        
+                        dayCards.forEach(dayCard => {
+                            // 檢查是否需要新頁面
+                            if (currentY > pageHeight - 100) {
+                                pdf.setFontSize(8);
+                                pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
+                                pageNum++;
+                                pdf.addPage();
+                                currentY = margin;
+                            }
+                            
+                            const dayTitle = dayCard.querySelector('.day-title').textContent;
+                            const dayTheme = dayCard.querySelector('.day-theme').textContent;
+                            
+                            // 添加天數標題
+                            pdf.setFontSize(12);
+                            pdf.setTextColor(30, 60, 114);
+                            pdf.text(dayTitle, margin, currentY);
+                            currentY += 7;
+                            
+                            pdf.setFontSize(10);
+                            pdf.setTextColor(42, 82, 152);
+                            pdf.text(dayTheme, margin, currentY);
+                            currentY += 10;
+                            
+                            // 添加活動
+                            const activities = dayCard.querySelectorAll('.activity-item');
+                            activities.forEach(activity => {
+                                if (currentY > pageHeight - 20) {
+                                    pdf.setFontSize(8);
+                                    pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
+                                    pageNum++;
+                                    pdf.addPage();
+                                    currentY = margin;
+                                }
+                                
+                                const time = activity.querySelector('.activity-time').textContent;
+                                const desc = activity.querySelector('.activity-desc').textContent;
+                                
+                                pdf.setFontSize(9);
+                                pdf.setTextColor(255, 126, 95);
+                                pdf.text(time, margin, currentY);
+                                
+                                pdf.setTextColor(51, 51, 51);
+                                pdf.text(desc, margin + 25, currentY);
+                                
+                                currentY += 7;
+                            });
+                            
+                            currentY += 10; // 天之間的間距
+                        });
+                    } else if (card.querySelector('.cost-table')) {
+                        // 預算表格
+                        const table = card.querySelector('.cost-table');
+                        const rows = table.querySelectorAll('tr');
+                        
+                        rows.forEach(row => {
+                            if (currentY > pageHeight - 20) {
+                                pdf.setFontSize(8);
+                                pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
+                                pageNum++;
+                                pdf.addPage();
+                                currentY = margin;
+                            }
+                            
+                            const cells = row.querySelectorAll('th, td');
+                            let cellX = margin;
+                            
+                            cells.forEach((cell, cellIndex) => {
+                                const text = cell.textContent;
+                                const cellWidth = pageWidth / cells.length;
+                                
+                                pdf.setFontSize(9);
+                                if (cell.tagName === 'TH') {
+                                    pdf.setTextColor(30, 60, 114);
+                                    pdf.setFont("helvetica", "bold");
+                                } else {
+                                    pdf.setTextColor(51, 51, 51);
+                                    pdf.setFont("helvetica", "normal");
+                                }
+                                
+                                pdf.text(text, cellX + 2, currentY);
+                                cellX += cellWidth;
+                            });
+                            
+                            currentY += 8;
+                        });
+                        
+                        currentY += 10;
+                        
+                        // 添加總預算
+                        if (card.querySelector('.budget-total')) {
+                            const budgetTotal = card.querySelector('.budget-total');
+                            const label = budgetTotal.querySelector('.budget-total-label').textContent;
+                            const value = budgetTotal.querySelector('.budget-total-value').textContent;
+                            
+                            pdf.setFontSize(11);
+                            pdf.setTextColor(30, 60, 114);
+                            pdf.text(label, margin, currentY);
+                            
+                            pdf.setFontSize(16);
+                            pdf.setTextColor(255, 126, 95);
+                            pdf.text(value, pageWidth - margin, currentY, { align: 'right' });
+                            
+                            currentY += 15;
+                        }
+                    } else if (card.querySelector('.overview-grid')) {
+                        // 其他網格佈局
+                        const gridItems = card.querySelectorAll('.overview-item');
+                        let gridX = margin;
+                        let itemsInRow = 0;
+                        
+                        gridItems.forEach((item, index) => {
+                            if (itemsInRow >= 2 || currentY > pageHeight - 50) {
+                                currentY += 30;
+                                gridX = margin;
+                                itemsInRow = 0;
+                            }
+                            
+                            if (currentY > pageHeight - 50) {
+                                pdf.setFontSize(8);
+                                pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
+                                pageNum++;
+                                pdf.addPage();
+                                currentY = margin;
+                                gridX = margin;
+                                itemsInRow = 0;
+                            }
+                            
+                            const label = item.querySelector('.overview-label').textContent;
+                            const value = item.querySelector('.overview-value').textContent;
+                            
+                            // 繪製項目框
+                            pdf.setDrawColor(42, 82, 152);
+                            pdf.setLineWidth(0.5);
+                            pdf.rect(gridX, currentY, pageWidth/2 - 5, 25);
+                            
+                            pdf.setFontSize(9);
+                            pdf.setTextColor(102, 102, 102);
+                            pdf.text(label, gridX + 5, currentY + 8);
+                            
+                            pdf.setFontSize(11);
+                            pdf.setTextColor(30, 60, 114);
+                            pdf.text(value, gridX + 5, currentY + 18);
+                            
+                            gridX += pageWidth/2;
+                            itemsInRow++;
+                            
+                            if (itemsInRow >= 2 || index === gridItems.length - 1) {
+                                currentY += 30;
+                                gridX = margin;
+                                itemsInRow = 0;
+                            }
+                        });
+                    } else if (card.querySelector('.flight-details')) {
+                        // 航班信息
+                        const flightLegs = card.querySelectorAll('.flight-leg');
+                        
+                        flightLegs.forEach(leg => {
+                            if (currentY > pageHeight - 30) {
+                                pdf.setFontSize(8);
+                                pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
+                                pageNum++;
+                                pdf.addPage();
+                                currentY = margin;
+                            }
+                            
+                            const route = leg.querySelector('.flight-route').textContent;
+                            const time = leg.querySelector('.flight-time').textContent;
+                            const number = leg.querySelector('.flight-number')?.textContent || '';
+                            
+                            pdf.setFontSize(11);
+                            pdf.setTextColor(30, 60, 114);
+                            pdf.text(route, margin, currentY);
+                            currentY += 6;
+                            
+                            pdf.setFontSize(9);
+                            pdf.setTextColor(102, 102, 102);
+                            pdf.text(time, margin, currentY);
+                            currentY += 6;
+                            
+                            if (number) {
+                                pdf.setFontSize(9);
+                                pdf.setTextColor(42, 82, 152);
+                                pdf.text(number, margin, currentY);
+                                currentY += 6;
+                            }
+                            
+                            currentY += 10;
+                        });
+                    }
+                    
+                    currentY += 15; // 卡片之間的間距
                 }
+                
+                // 添加最後一頁的頁碼
+                pdf.setFontSize(8);
+                pdf.text(`第 ${pageNum} 頁`, 195, 290, { align: 'right' });
                 
                 // 保存PDF
                 pdf.save(`英國旅遊行程-${new Date().toISOString().split('T')[0]}.pdf`);
@@ -1702,7 +2121,7 @@
                 exportBtn.innerHTML = '<i class="fas fa-file-pdf"></i> 導出PDF';
                 exportBtn.disabled = false;
                 
-                showNotification('PDF已成功導出');
+                showNotification('PDF已成功導出，共' + pageNum + '頁');
                 
             } catch (error) {
                 console.error('PDF生成錯誤:', error);
@@ -1778,7 +2197,6 @@
         // 初始化頁面
         document.addEventListener('DOMContentLoaded', function() {
             initPage();
-            checkUrlParams();
         });
     </script>
 </body>

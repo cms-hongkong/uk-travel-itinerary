@@ -601,6 +601,27 @@
                 font-size: 0.9rem;
             }
         }
+        
+        /* 打印樣式 */
+        @media print {
+            .action-buttons, .edit-icon, .share-modal, .notification, .data-status, .footer, .map-container {
+                display: none !important;
+            }
+            
+            .card {
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+                page-break-inside: avoid !important;
+            }
+            
+            .day-card {
+                page-break-after: always !important;
+            }
+            
+            .container {
+                padding: 10px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -609,7 +630,7 @@
             <div class="header-content">
                 <div>
                     <h1 class="trip-title" id="tripTitle" contenteditable="true">英國17天行程</h1>
-                    <p class="trip-subtitle" id="tripSubtitle" contenteditable="true">2026年7月29日 - 8月13日 | 3人同行 | 愛丁堡→蘇格蘭高地→曼徹斯特</p>
+                    <p class="trip-subtitle" id="tripSubtitle" contenteditable="true">2026年7月28日 - 8月13日</p>
                 </div>
                 <div class="action-buttons">
                     <button class="btn btn-edit" id="toggleEditBtn">
@@ -638,13 +659,13 @@
                     <div class="overview-item">
                         <div class="overview-label">旅行日期</div>
                         <div class="overview-value">
-                            <span class="editable" contenteditable="false" id="tripDates">2026.07.29 - 08.13</span>
+                            <span class="editable" contenteditable="false" id="tripDates">2026.07.28 - 08.13</span>
                         </div>
                     </div>
                     <div class="overview-item">
                         <div class="overview-label">天數</div>
                         <div class="overview-value">
-                            <span class="editable" contenteditable="false" id="tripDays">16天15晚</span>
+                            <span class="editable" contenteditable="false" id="tripDays">17天16晚</span>
                         </div>
                     </div>
                     <div class="overview-item">
@@ -656,7 +677,7 @@
                     <div class="overview-item">
                         <div class="overview-label">主要交通</div>
                         <div class="overview-value">
-                            <span class="editable" contenteditable="false" id="tripTransport">火車 + 自駕</span>
+                            <span class="editable" contenteditable="false" id="tripTransport">飛機 + 火車 + 自駕</span>
                         </div>
                     </div>
                     <div class="overview-item">
@@ -734,61 +755,53 @@
                 </h2>
                 
                 <!-- 第1天 -->
-                <div class="day-card card">
+                <div class="day-card card" id="day-1">
                     <div class="day-header">
-                        <h3 class="day-title editable" contenteditable="false">第1天｜7月29日（週三）｜愛丁堡抵達</h3>
-                        <span class="day-theme editable" contenteditable="false">歷史老城漫步</span>
+                        <h3 class="day-title editable" contenteditable="false">第1天｜7月28日（週二）｜香港出發</h3>
+                        <span class="day-theme editable" contenteditable="false">航班出發</span>
                     </div>
                     <ul class="activity-list">
+                        <li class="activity-item">
+                            <span class="activity-time editable" contenteditable="false">21:00前</span>
+                            <span class="activity-desc editable" contenteditable="false">抵達香港國際機場</span>
+                        </li>
+                        <li class="activity-item">
+                            <span class="activity-time editable" contenteditable="false">21:15-23:15</span>
+                            <span class="activity-desc editable" contenteditable="false">辦理登機手續</span>
+                        </li>
+                        <li class="activity-item">
+                            <span class="activity-time editable" contenteditable="false">23:15</span>
+                            <span class="activity-desc editable" contenteditable="false">航班LX139起飛（香港→蘇黎世）</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- 第2天 -->
+                <div class="day-card card" id="day-2">
+                    <div class="day-header">
+                        <h3 class="day-title editable" contenteditable="false">第2天｜7月29日（週三）｜愛丁堡抵達</h3>
+                        <span class="day-theme editable" contenteditable="false">抵達與適應</span>
+                    </div>
+                    <ul class="activity-list">
+                        <li class="activity-item">
+                            <span class="activity-time editable" contenteditable="false">06:15</span>
+                            <span class="activity-desc editable" contenteditable="false">抵達蘇黎世機場</span>
+                        </li>
+                        <li class="activity-item">
+                            <span class="activity-time editable" contenteditable="false">07:30</span>
+                            <span class="activity-desc editable" contenteditable="false">航班LX8290起飛（蘇黎世→愛丁堡）</span>
+                        </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">08:40</span>
                             <span class="activity-desc editable" contenteditable="false">抵達愛丁堡機場</span>
                         </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">09:00-09:30</span>
-                            <span class="activity-desc editable" contenteditable="false">機場→市區（Airlink 100巴士，30分鐘，£19.5總｜£6.5/人）</span>
-                        </li>
-                        <li class="activity-item">
-                            <span class="activity-time editable" contenteditable="false">09:35-10:00</span>
-                            <span class="activity-desc editable" contenteditable="false">酒店寄存行李</span>
+                            <span class="activity-desc editable" contenteditable="false">機場→市區（Airlink 100巴士）</span>
                         </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">10:00-18:00</span>
-                            <span class="activity-desc editable" contenteditable="false">老城徒步：Castlehill→維多利亞街→聖吉爾斯大教堂→皇家一英里→Grassmarket</span>
-                        </li>
-                        <li class="activity-item">
-                            <span class="activity-time editable" contenteditable="false">18:00-20:00</span>
-                            <span class="activity-desc editable" contenteditable="false">晚餐</span>
-                        </li>
-                        <li class="activity-item">
-                            <span class="activity-time editable" contenteditable="false">住宿</span>
-                            <span class="activity-desc editable" contenteditable="false">愛丁堡</span>
-                        </li>
-                    </ul>
-                </div>
-                
-                <!-- 第2天 -->
-                <div class="day-card card">
-                    <div class="day-header">
-                        <h3 class="day-title editable" contenteditable="false">第2天｜7月30日（週四）｜愛丁堡城堡</h3>
-                        <span class="day-theme editable" contenteditable="false">皇室地標與隱世村落</span>
-                    </div>
-                    <ul class="activity-list">
-                        <li class="activity-item">
-                            <span class="activity-time editable" contenteditable="false">09:00-12:00</span>
-                            <span class="activity-desc editable" contenteditable="false">愛丁堡城堡（需預約，£54總｜£18/人）</span>
-                        </li>
-                        <li class="activity-item">
-                            <span class="activity-time editable" contenteditable="false">12:30-14:30</span>
-                            <span class="activity-desc editable" contenteditable="false">皇家遊艇不列顛尼亞號（巴士前往，£36總｜£12/人）</span>
-                        </li>
-                        <li class="activity-item">
-                            <span class="activity-time editable" contenteditable="false">15:00-16:30</span>
-                            <span class="activity-desc editable" contenteditable="false">愛丁堡皇家植物園（免費，溫室£7.5總｜£2.5/人）</span>
-                        </li>
-                        <li class="activity-item">
-                            <span class="activity-time editable" contenteditable="false">17:00-18:00</span>
-                            <span class="activity-desc editable" contenteditable="false">Dean Village（步行25分鐘）</span>
+                            <span class="activity-desc editable" contenteditable="false">老城徒步：Castlehill→維多利亞街→聖吉爾斯大教堂</span>
                         </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">住宿</span>
@@ -798,9 +811,69 @@
                 </div>
                 
                 <!-- 第3天 -->
-                <div class="day-card card">
+                <div class="day-card card" id="day-3">
                     <div class="day-header">
-                        <h3 class="day-title editable" contenteditable="false">第3天｜7月31日（週五）｜愛丁堡藝術文化</h3>
+                        <h3 class="day-title editable" contenteditable="false">第3天｜7月30日（週四）｜愛丁堡城堡</h3>
+                        <span class="day-theme editable" contenteditable="false">皇室地標與隱世村落</span>
+                    </div>
+                    <ul class="activity-list">
+                        <li class="activity-item">
+                            <span class="activity-time editable" contenteditable="false">09:00-12:00</span>
+                            <span class="activity-desc editable" contenteditable="false">愛丁堡城堡（需預約）</span>
+                        </li>
+                        <li class="activity-item">
+                            <span class="activity-time editable" contenteditable="false">12:30-14:30</span>
+                            <span class="activity-desc editable" contenteditable="false">皇家遊艇不列顛尼亞號</span>
+                        </li>
+                        <li class="activity-item">
+                            <span class="activity-time editable" contenteditable="false">15:00-16:30</span>
+                            <span class="activity-desc editable" contenteditable="false">愛丁堡皇家植物園</span>
+                        </li>
+                        <li class="activity-item">
+                            <span class="activity-time editable" contenteditable="false">17:00-18:00</span>
+                            <span class="activity-desc editable" contenteditable="false">Dean Village</span>
+                        </li>
+                        <li class="activity-item">
+                            <span class="activity-time editable" contenteditable="false">住宿</span>
+                            <span class="activity-desc editable" contenteditable="false">愛丁堡</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- 第4-6天 -->
+                <div class="day-card card" id="day-4-6">
+                    <div class="day-header">
+                        <h3 class="day-title editable" contenteditable="false">第4-6天｜7月31日 - 8月2日（週五至日）｜高地與斯凱島三日團</h3>
+                        <span class="day-theme editable" contenteditable="false">跟團行程</span>
+                    </div>
+                    <ul class="activity-list">
+                        <li class="activity-item">
+                            <span class="activity-time editable" contenteditable="false">第4天 (7/31)</span>
+                            <span class="activity-desc editable" contenteditable="false">愛丁堡→洛蒙德湖→格倫科峽谷→威廉堡→斯凱島</span>
+                        </li>
+                        <li class="activity-item">
+                            <span class="activity-time editable" contenteditable="false">第5天 (8/1)</span>
+                            <span class="activity-desc editable" contenteditable="false">斯凱島全日遊（波特里、The Storr、Kilt Rock、鄧韋根城堡）</span>
+                        </li>
+                        <li class="activity-item">
+                            <span class="activity-time editable" contenteditable="false">第6天 (8/2)</span>
+                            <span class="activity-desc editable" contenteditable="false">艾琳多南城堡→尼斯湖→返回愛丁堡</span>
+                        </li>
+                        <li class="activity-item">
+                            <span class="activity-time editable" contenteditable="false">費用</span>
+                            <span class="activity-desc editable" contenteditable="false">£960總｜£320/人</span>
+                        </li>
+                        <li class="activity-item">
+                            <span class="activity-time editable" contenteditable="false">住宿</span>
+                            <span class="activity-desc editable" contenteditable="false">高地/斯凱島2晚，第6晚愛丁堡</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- 第7天 -->
+                <div class="day-card card" id="day-7">
+                    <div class="day-header">
+                        <h3 class="day-title editable" contenteditable="false">第7天｜8月3日（週一）｜愛丁堡藝術文化</h3>
                         <span class="day-theme editable" contenteditable="false">博物館與威士忌</span>
                     </div>
                     <ul class="activity-list">
@@ -818,7 +891,7 @@
                         </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">15:30-16:30</span>
-                            <span class="activity-desc editable" contenteditable="false">蘇格蘭威士忌體驗中心（£45總｜£15/人）</span>
+                            <span class="activity-desc editable" contenteditable="false">蘇格蘭威士忌體驗中心</span>
                         </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">住宿</span>
@@ -827,50 +900,24 @@
                     </ul>
                 </div>
                 
-                <!-- 第4-6天 -->
-                <div class="day-card card">
+                <!-- 第8天 -->
+                <div class="day-card card" id="day-8">
                     <div class="day-header">
-                        <h3 class="day-title editable" contenteditable="false">第4-6天｜8月1-3日（週六至一）｜高地與斯凱島三日團</h3>
-                        <span class="day-theme editable" contenteditable="false">跟團行程</span>
-                    </div>
-                    <ul class="activity-list">
-                        <li class="activity-item">
-                            <span class="activity-time editable" contenteditable="false">第4天 (8/1)</span>
-                            <span class="activity-desc editable" contenteditable="false">愛丁堡→洛蒙德湖→格倫科峽谷→威廉堡→斯凱島</span>
-                        </li>
-                        <li class="activity-item">
-                            <span class="activity-time editable" contenteditable="false">第5天 (8/2)</span>
-                            <span class="activity-desc editable" contenteditable="false">斯凱島全日遊（波特里、The Storr、Kilt Rock、鄧韋根城堡）</span>
-                        </li>
-                        <li class="activity-item">
-                            <span class="activity-time editable" contenteditable="false">第6天 (8/3)</span>
-                            <span class="activity-desc editable" contenteditable="false">艾琳多南城堡→尼斯湖→返回愛丁堡（約19:00抵達）</span>
-                        </li>
-                        <li class="activity-item">
-                            <span class="activity-time editable" contenteditable="false">費用</span>
-                            <span class="activity-desc editable" contenteditable="false">£960總｜£320/人</span>
-                        </li>
-                        <li class="activity-item">
-                            <span class="activity-time editable" contenteditable="false">住宿</span>
-                            <span class="activity-desc editable" contenteditable="false">斯凱島2晚，第6晚愛丁堡</span>
-                        </li>
-                    </ul>
-                </div>
-                
-                <!-- 第7天 -->
-                <div class="day-card card">
-                    <div class="day-header">
-                        <h3 class="day-title editable" contenteditable="false">第7天｜8月4日（週二）｜前往格拉斯哥</h3>
+                        <h3 class="day-title editable" contenteditable="false">第8天｜8月4日（週二）｜愛丁堡→格拉斯哥</h3>
                         <span class="day-theme editable" contenteditable="false">租車與城市核心</span>
                     </div>
                     <ul class="activity-list">
                         <li class="activity-item">
-                            <span class="activity-time editable" contenteditable="false">10:00-10:50</span>
-                            <span class="activity-desc editable" contenteditable="false">愛丁堡→格拉斯哥（火車，50分鐘，£36總｜£12/人）</span>
+                            <span class="activity-time editable" contenteditable="false">上午</span>
+                            <span class="activity-desc editable" contenteditable="false">愛丁堡最後探索</span>
                         </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">14:00</span>
-                            <span class="activity-desc editable" contenteditable="false">格拉斯哥取車（租車5天，£450總｜£150/人）</span>
+                            <span class="activity-desc editable" contenteditable="false">愛丁堡取車（租車4天）</span>
+                        </li>
+                        <li class="activity-item">
+                            <span class="activity-time editable" contenteditable="false">15:00-16:00</span>
+                            <span class="activity-desc editable" contenteditable="false">駕車前往格拉斯哥（1小時）</span>
                         </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">下午</span>
@@ -883,10 +930,10 @@
                     </ul>
                 </div>
                 
-                <!-- 第8天 -->
-                <div class="day-card card">
+                <!-- 第9天 -->
+                <div class="day-card card" id="day-9">
                     <div class="day-header">
-                        <h3 class="day-title editable" contenteditable="false">第8天｜8月5日（週三）｜格拉斯哥藝術科學</h3>
+                        <h3 class="day-title editable" contenteditable="false">第9天｜8月5日（週三）｜格拉斯哥藝術科學</h3>
                         <span class="day-theme editable" contenteditable="false">大學城與博物館</span>
                     </div>
                     <ul class="activity-list">
@@ -905,10 +952,10 @@
                     </ul>
                 </div>
                 
-                <!-- 第9天 -->
-                <div class="day-card card">
+                <!-- 第10天 -->
+                <div class="day-card card" id="day-10">
                     <div class="day-header">
-                        <h3 class="day-title editable" contenteditable="false">第9天｜8月6日（週四）｜前往湖區</h3>
+                        <h3 class="day-title editable" contenteditable="false">第10天｜8月6日（週四）｜格拉斯哥→湖區</h3>
                         <span class="day-theme editable" contenteditable="false">自駕前往湖區</span>
                     </div>
                     <ul class="activity-list">
@@ -918,7 +965,7 @@
                         </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">14:00-16:30</span>
-                            <span class="activity-desc editable" contenteditable="false">駕車前往湖區（2.5小時，約140英里）</span>
+                            <span class="activity-desc editable" contenteditable="false">駕車前往湖區（2.5小時）</span>
                         </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">傍晚</span>
@@ -931,20 +978,20 @@
                     </ul>
                 </div>
                 
-                <!-- 第10天 -->
-                <div class="day-card card">
+                <!-- 第11天 -->
+                <div class="day-card card" id="day-11">
                     <div class="day-header">
-                        <h3 class="day-title editable" contenteditable="false">第10天｜8月7日（週五）｜湖區全日</h3>
+                        <h3 class="day-title editable" contenteditable="false">第11天｜8月7日（週五）｜湖區全日</h3>
                         <span class="day-theme editable" contenteditable="false">自駕小艇與湖光山色</span>
                     </div>
                     <ul class="activity-list">
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">09:00-10:30</span>
-                            <span class="activity-desc editable" contenteditable="false">溫德米爾湖自駕小艇（£70總｜£23.3/人）</span>
+                            <span class="activity-desc editable" contenteditable="false">溫德米爾湖自駕小艇</span>
                         </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">上午</span>
-                            <span class="activity-desc editable" contenteditable="false">格拉斯米爾小鎮（駕車15分鐘）</span>
+                            <span class="activity-desc editable" contenteditable="false">格拉斯米爾小鎮</span>
                         </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">下午</span>
@@ -957,11 +1004,11 @@
                     </ul>
                 </div>
                 
-                <!-- 第11天 -->
-                <div class="day-card card">
+                <!-- 第12天 -->
+                <div class="day-card card" id="day-12">
                     <div class="day-header">
-                        <h3 class="day-title editable" contenteditable="false">第11天｜8月8日（週六）｜前往利物浦</h3>
-                        <span class="day-theme editable" contenteditable="false">音樂遺產之旅</span>
+                        <h3 class="day-title editable" contenteditable="false">第12天｜8月8日（週六）｜湖區→利物浦</h3>
+                        <span class="day-theme editable" contenteditable="false">自駕前往利物浦</span>
                     </div>
                     <ul class="activity-list">
                         <li class="activity-item">
@@ -970,7 +1017,11 @@
                         </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">12:00-14:00</span>
-                            <span class="activity-desc editable" contenteditable="false">駕車前往利物浦（2小時，約90英里）</span>
+                            <span class="activity-desc editable" contenteditable="false">駕車前往利物浦（2小時）</span>
+                        </li>
+                        <li class="activity-item">
+                            <span class="activity-time editable" contenteditable="false">14:00</span>
+                            <span class="activity-desc editable" contenteditable="false">利物浦還車（租車結束）</span>
                         </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">下午</span>
@@ -983,10 +1034,10 @@
                     </ul>
                 </div>
                 
-                <!-- 第12天 -->
-                <div class="day-card card">
+                <!-- 第13天 -->
+                <div class="day-card card" id="day-13">
                     <div class="day-header">
-                        <h3 class="day-title editable" contenteditable="false">第12天｜8月9日（週日）｜利物浦全日</h3>
+                        <h3 class="day-title editable" contenteditable="false">第13天｜8月9日（週日）｜利物浦全日</h3>
                         <span class="day-theme editable" contenteditable="false">披頭四與購物</span>
                     </div>
                     <ul class="activity-list">
@@ -1005,10 +1056,10 @@
                     </ul>
                 </div>
                 
-                <!-- 第13天 -->
-                <div class="day-card card">
+                <!-- 第14天 -->
+                <div class="day-card card" id="day-14">
                     <div class="day-header">
-                        <h3 class="day-title editable" contenteditable="false">第13天｜8月10日（週一）｜利物浦→切斯特</h3>
+                        <h3 class="day-title editable" contenteditable="false">第14天｜8月10日（週一）｜利物浦→切斯特</h3>
                         <span class="day-theme editable" contenteditable="false">羅馬古城</span>
                     </div>
                     <ul class="activity-list">
@@ -1018,11 +1069,7 @@
                         </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">12:00-13:00</span>
-                            <span class="activity-desc editable" contenteditable="false">駕車前往切斯特（1小時，35英里）</span>
-                        </li>
-                        <li class="activity-item">
-                            <span class="activity-time editable" contenteditable="false">13:00</span>
-                            <span class="activity-desc editable" contenteditable="false">切斯特還車（租車結束）</span>
+                            <span class="activity-desc editable" contenteditable="false">火車前往切斯特（1小時）</span>
                         </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">下午</span>
@@ -1035,10 +1082,10 @@
                     </ul>
                 </div>
                 
-                <!-- 第14天 -->
-                <div class="day-card card">
+                <!-- 第15天 -->
+                <div class="day-card card" id="day-15">
                     <div class="day-header">
-                        <h3 class="day-title editable" contenteditable="false">第14天｜8月11日（週二）｜切斯特全日</h3>
+                        <h3 class="day-title editable" contenteditable="false">第15天｜8月11日（週二）｜切斯特全日</h3>
                         <span class="day-theme editable" contenteditable="false">購物與羅馬遺跡</span>
                     </div>
                     <ul class="activity-list">
@@ -1057,10 +1104,10 @@
                     </ul>
                 </div>
                 
-                <!-- 第15天 -->
-                <div class="day-card card">
+                <!-- 第16天 -->
+                <div class="day-card card" id="day-16">
                     <div class="day-header">
-                        <h3 class="day-title editable" contenteditable="false">第15天｜8月12日（週三）｜切斯特→曼徹斯特</h3>
+                        <h3 class="day-title editable" contenteditable="false">第16天｜8月12日（週三）｜切斯特→曼徹斯特</h3>
                         <span class="day-theme editable" contenteditable="false">前往曼徹斯特</span>
                     </div>
                     <ul class="activity-list">
@@ -1070,7 +1117,7 @@
                         </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">12:00-13:00</span>
-                            <span class="activity-desc editable" contenteditable="false">切斯特→曼徹斯特（火車，1小時，£24總｜£8/人）</span>
+                            <span class="activity-desc editable" contenteditable="false">火車前往曼徹斯特（1小時）</span>
                         </li>
                         <li class="activity-item">
                             <span class="activity-time editable" contenteditable="false">下午</span>
@@ -1083,10 +1130,10 @@
                     </ul>
                 </div>
                 
-                <!-- 第16天 -->
-                <div class="day-card card">
+                <!-- 第17天 -->
+                <div class="day-card card" id="day-17">
                     <div class="day-header">
-                        <h3 class="day-title editable" contenteditable="false">第16天｜8月13日（週四）｜曼徹斯特→香港</h3>
+                        <h3 class="day-title editable" contenteditable="false">第17天｜8月13日（週四）｜曼徹斯特→香港</h3>
                         <span class="day-theme editable" contenteditable="false">回程</span>
                     </div>
                     <ul class="activity-list">
@@ -1131,37 +1178,37 @@
                     <div class="overview-item">
                         <div class="overview-label">租車期間</div>
                         <div class="overview-value">
-                            <span class="editable" contenteditable="false">8月4日14:00 - 8月10日13:00（6天）</span>
+                            <span class="editable" contenteditable="false">8月4日14:00 - 8月8日14:00（4天）</span>
                         </div>
                     </div>
                     <div class="overview-item">
                         <div class="overview-label">路線</div>
                         <div class="overview-value">
-                            <span class="editable" contenteditable="false">格拉斯哥→湖區→利物浦→切斯特</span>
+                            <span class="editable" contenteditable="false">愛丁堡→格拉斯哥→湖區→利物浦</span>
                         </div>
                     </div>
                     <div class="overview-item">
                         <div class="overview-label">總里程</div>
                         <div class="overview-value">
-                            <span class="editable" contenteditable="false">約265英里（425公里）</span>
+                            <span class="editable" contenteditable="false">約230英里（370公里）</span>
                         </div>
                     </div>
                     <div class="overview-item">
                         <div class="overview-label">租車費用</div>
                         <div class="overview-value">
-                            <span class="editable" contenteditable="false">£450總｜£150/人</span>
+                            <span class="editable" contenteditable="false">£320總｜£107/人</span>
                         </div>
                     </div>
                     <div class="overview-item">
                         <div class="overview-label">預計油費</div>
                         <div class="overview-value">
-                            <span class="editable" contenteditable="false">£130總｜£43.3/人</span>
+                            <span class="editable" contenteditable="false">£100總｜£33/人</span>
                         </div>
                     </div>
                     <div class="overview-item">
                         <div class="overview-label">預計停車費</div>
                         <div class="overview-value">
-                            <span class="editable" contenteditable="false">£50總｜£16.7/人</span>
+                            <span class="editable" contenteditable="false">£40總｜£13/人</span>
                         </div>
                     </div>
                 </div>
@@ -1182,9 +1229,9 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><span class="editable" contenteditable="false">愛丁堡→格拉斯哥</span></td>
-                            <td><span class="editable" contenteditable="false">8月4日 10:00-10:50（50分鐘）</span></td>
-                            <td><span class="editable" contenteditable="false">£36總｜£12/人</span></td>
+                            <td><span class="editable" contenteditable="false">利物浦→切斯特</span></td>
+                            <td><span class="editable" contenteditable="false">8月10日 12:00-13:00（1小時）</span></td>
+                            <td><span class="editable" contenteditable="false">£12總｜£4/人</span></td>
                         </tr>
                         <tr>
                             <td><span class="editable" contenteditable="false">切斯特→曼徹斯特</span></td>
@@ -1222,39 +1269,39 @@
                             <td><span class="editable" contenteditable="false">已包含導覽、部分住宿</span></td>
                         </tr>
                         <tr>
-                            <td><span class="editable" contenteditable="false">租車6天</span></td>
-                            <td><span class="editable" contenteditable="false">£450</span></td>
-                            <td><span class="editable" contenteditable="false">£150</span></td>
+                            <td><span class="editable" contenteditable="false">租車4天</span></td>
+                            <td><span class="editable" contenteditable="false">£320</span></td>
+                            <td><span class="editable" contenteditable="false">£107</span></td>
                             <td><span class="editable" contenteditable="false">含基本保險</span></td>
                         </tr>
                         <tr>
                             <td><span class="editable" contenteditable="false">主要火車票</span></td>
-                            <td><span class="editable" contenteditable="false">£120</span></td>
-                            <td><span class="editable" contenteditable="false">£40</span></td>
+                            <td><span class="editable" contenteditable="false">£75</span></td>
+                            <td><span class="editable" contenteditable="false">£25</span></td>
                             <td><span class="editable" contenteditable="false">需提前預訂</span></td>
                         </tr>
                         <tr>
                             <td><span class="editable" contenteditable="false">湖區自駕小艇</span></td>
                             <td><span class="editable" contenteditable="false">£70</span></td>
-                            <td><span class="editable" contenteditable="false">£23.3</span></td>
+                            <td><span class="editable" contenteditable="false">£23</span></td>
                             <td><span class="editable" contenteditable="false">需預約</span></td>
                         </tr>
                         <tr>
-                            <td><span class="editable" contenteditable="false">住宿15晚</span></td>
-                            <td><span class="editable" contenteditable="false">£1,700</span></td>
-                            <td><span class="editable" contenteditable="false">£567</span></td>
-                            <td><span class="editable" contenteditable="false">平均£113/晚/房</span></td>
+                            <td><span class="editable" contenteditable="false">住宿16晚</span></td>
+                            <td><span class="editable" contenteditable="false">£1,800</span></td>
+                            <td><span class="editable" contenteditable="false">£600</span></td>
+                            <td><span class="editable" contenteditable="false">平均£112.5/晚/房</span></td>
                         </tr>
                         <tr>
                             <td><span class="editable" contenteditable="false">餐飲預算</span></td>
-                            <td><span class="editable" contenteditable="false">£1,080</span></td>
-                            <td><span class="editable" contenteditable="false">£360</span></td>
+                            <td><span class="editable" contenteditable="false">£1,150</span></td>
+                            <td><span class="editable" contenteditable="false">£383</span></td>
                             <td><span class="editable" contenteditable="false">£22.5/人/天</span></td>
                         </tr>
                         <tr>
                             <td><span class="editable" contenteditable="false">門票活動</span></td>
-                            <td><span class="editable" contenteditable="false">£240</span></td>
-                            <td><span class="editable" contenteditable="false">£80</span></td>
+                            <td><span class="editable" contenteditable="false">£250</span></td>
+                            <td><span class="editable" contenteditable="false">£83</span></td>
                             <td><span class="editable" contenteditable="false">城堡、博物館等</span></td>
                         </tr>
                         <tr>
@@ -1267,7 +1314,7 @@
                 </table>
                 <div class="budget-total">
                     <div class="budget-total-label">總預算（不含個人購物）</div>
-                    <div class="budget-total-value"><span class="editable" contenteditable="false">£3,920 總｜£1,307/人</span></div>
+                    <div class="budget-total-value"><span class="editable" contenteditable="false">£3,925 總｜£1,308/人</span></div>
                 </div>
             </div>
             
@@ -1280,19 +1327,19 @@
                     <div class="overview-item">
                         <div class="overview-label">愛丁堡</div>
                         <div class="overview-value">
-                            <span class="editable" contenteditable="false">4晚（7/29-31, 8/3）</span>
+                            <span class="editable" contenteditable="false">4晚（7/29-30, 8/2-3）</span>
                         </div>
                     </div>
                     <div class="overview-item">
-                        <div class="overview-label">斯凱島</div>
+                        <div class="overview-label">高地/斯凱島</div>
                         <div class="overview-value">
-                            <span class="editable" contenteditable="false">2晚（8/1-2，團安排）</span>
+                            <span class="editable" contenteditable="false">2晚（7/31-8/1，團安排）</span>
                         </div>
                     </div>
                     <div class="overview-item">
                         <div class="overview-label">格拉斯哥</div>
                         <div class="overview-value">
-                            <span class="editable" contenteditable="false">3晚（8/4-6）</span>
+                            <span class="editable" contenteditable="false">2晚（8/4-5）</span>
                         </div>
                     </div>
                     <div class="overview-item">
@@ -1379,12 +1426,12 @@
         // 行程數據存儲
         let tripData = {
             title: "英國17天行程",
-            subtitle: "2026年7月29日 - 8月13日 | 3人同行 | 愛丁堡→蘇格蘭高地→曼徹斯特",
+            subtitle: "2026年7月28日 - 8月13日",
             overview: {
-                dates: "2026.07.29 - 08.13",
-                days: "16天15晚",
+                dates: "2026.07.28 - 08.13",
+                days: "17天16晚",
                 people: "3人",
-                transport: "火車 + 自駕",
+                transport: "飛機 + 火車 + 自駕",
                 route: "愛丁堡 → 蘇格蘭高地 → 格拉斯哥 → 湖區 → 利物浦 → 切斯特 → 曼徹斯特"
             },
             flights: {
@@ -1408,13 +1455,14 @@
         
         // 天氣數據
         const weatherData = [
+            { date: "7/28", day: "週二", location: "香港", icon: "fa-cloud-sun", temp: "30°C", desc: "多雲" },
             { date: "7/29", day: "週三", location: "愛丁堡", icon: "fa-cloud-sun", temp: "16°C", desc: "多雲" },
             { date: "7/30", day: "週四", location: "愛丁堡", icon: "fa-sun", temp: "18°C", desc: "晴" },
-            { date: "7/31", day: "週五", location: "愛丁堡", icon: "fa-cloud-rain", temp: "15°C", desc: "小雨" },
-            { date: "8/1", day: "週六", location: "高地", icon: "fa-cloud", temp: "14°C", desc: "多雲" },
-            { date: "8/2", day: "週日", location: "斯凱島", icon: "fa-cloud-sun-rain", temp: "13°C", desc: "陣雨" },
-            { date: "8/3", day: "週一", location: "高地", icon: "fa-cloud", temp: "14°C", desc: "多雲" },
-            { date: "8/4", day: "週二", location: "格拉斯哥", icon: "fa-cloud-sun", temp: "17°C", desc: "多雲時晴" },
+            { date: "7/31", day: "週五", location: "高地", icon: "fa-cloud-rain", temp: "15°C", desc: "小雨" },
+            { date: "8/1", day: "週六", location: "斯凱島", icon: "fa-cloud-sun-rain", temp: "13°C", desc: "陣雨" },
+            { date: "8/2", day: "週日", location: "高地→愛丁堡", icon: "fa-cloud", temp: "14°C", desc: "多雲" },
+            { date: "8/3", day: "週一", location: "愛丁堡", icon: "fa-cloud-sun", temp: "17°C", desc: "多雲時晴" },
+            { date: "8/4", day: "週二", location: "愛丁堡→格拉斯哥", icon: "fa-cloud-sun", temp: "17°C", desc: "多雲時晴" },
             { date: "8/5", day: "週三", location: "格拉斯哥", icon: "fa-sun", temp: "19°C", desc: "晴" },
             { date: "8/6", day: "週四", location: "格拉斯哥→湖區", icon: "fa-cloud", temp: "16°C", desc: "多雲" },
             { date: "8/7", day: "週五", location: "湖區", icon: "fa-cloud-rain", temp: "15°C", desc: "小雨" },
@@ -1518,8 +1566,8 @@
             document.getElementById('shareWhatsApp').addEventListener('click', shareOnWhatsApp);
             document.getElementById('shareLinkBtn').addEventListener('click', copyShareLink);
             
-            // 導出PDF - 使用更簡單的方法
-            exportBtn.addEventListener('click', exportToPDFSimple);
+            // 導出PDF
+            exportBtn.addEventListener('click', exportToPDF);
             
             // 刷新天氣
             refreshWeatherBtn.addEventListener('click', refreshWeather);
@@ -1643,7 +1691,7 @@
                 });
                 
                 // 保存到本地存儲
-                localStorage.setItem('tripData_v2', JSON.stringify(savedData));
+                localStorage.setItem('tripData_v4', JSON.stringify(savedData));
                 
                 // 更新頁面顯示的最後修改時間
                 lastUpdatedEl.textContent = savedData.lastUpdated;
@@ -1666,7 +1714,7 @@
         // 從本地存儲加載數據
         function loadDataFromStorage() {
             try {
-                const savedData = localStorage.getItem('tripData_v2');
+                const savedData = localStorage.getItem('tripData_v4');
                 if (savedData) {
                     const data = JSON.parse(savedData);
                     applyDataToPage(data);
@@ -1679,7 +1727,7 @@
                     return true;
                 } else {
                     // 嘗試載入舊版本數據
-                    const oldData = localStorage.getItem('tripData');
+                    const oldData = localStorage.getItem('tripData_v3') || localStorage.getItem('tripData_v2') || localStorage.getItem('tripData');
                     if (oldData) {
                         const data = JSON.parse(oldData);
                         applyDataToPage(data);
@@ -1809,14 +1857,23 @@
                 saveDataToStorage();
                 
                 // 創建包含行程數據的分享連結
-                const dataString = encodeURIComponent(JSON.stringify(tripData));
+                const dataString = JSON.stringify(tripData);
+                const base64Data = btoa(unescape(encodeURIComponent(dataString)));
                 const currentUrl = window.location.href.split('?')[0];
-                const shareUrl = `${currentUrl}?trip=${dataString}`;
+                const shareUrl = `${currentUrl}?trip=${base64Data}`;
                 
                 shareableLink.value = shareUrl;
             } catch (error) {
                 console.error('更新分享連結時出錯:', error);
-                shareableLink.value = window.location.href;
+                // 如果btoa失敗，使用encodeURIComponent
+                try {
+                    const dataString = encodeURIComponent(JSON.stringify(tripData));
+                    const currentUrl = window.location.href.split('?')[0];
+                    const shareUrl = `${currentUrl}?trip=${dataString}`;
+                    shareableLink.value = shareUrl;
+                } catch (e2) {
+                    shareableLink.value = window.location.href;
+                }
             }
         }
         
@@ -1827,11 +1884,20 @@
             
             if (tripParam) {
                 try {
-                    const sharedData = JSON.parse(decodeURIComponent(tripParam));
+                    // 嘗試解碼base64
+                    let sharedData;
+                    try {
+                        const decodedData = decodeURIComponent(escape(atob(tripParam)));
+                        sharedData = JSON.parse(decodedData);
+                    } catch (e1) {
+                        // 如果不是base64，嘗試直接解析
+                        sharedData = JSON.parse(decodeURIComponent(tripParam));
+                    }
+                    
                     applyDataToPage(sharedData);
                     
                     // 保存到本地存儲
-                    localStorage.setItem('tripData_v2', JSON.stringify(sharedData));
+                    localStorage.setItem('tripData_v4', JSON.stringify(sharedData));
                     
                     // 更新tripData對象
                     tripData = sharedData;
@@ -1896,8 +1962,8 @@
             window.open(`https://wa.me/?text=${text}`, '_blank');
         }
         
-        // 簡單的PDF導出方法（使用html2canvas）
-        async function exportToPDFSimple() {
+        // PDF導出函數 - 使用html2canvas確保文字正確顯示
+        async function exportToPDF() {
             exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在生成PDF...';
             exportBtn.disabled = true;
             
@@ -1907,20 +1973,19 @@
                 if (wasEditMode) toggleEditMode();
                 
                 // 隱藏不需要的元素
+                const elementsToHide = document.querySelectorAll('.action-buttons, .edit-icon, .share-modal, .notification, .data-status, .footer, .map-container');
                 const originalDisplay = [];
-                const elementsToHide = document.querySelectorAll('.action-buttons, .edit-icon, .share-modal, .notification, .data-status');
                 elementsToHide.forEach(el => {
                     originalDisplay.push({element: el, display: el.style.display});
                     el.style.display = 'none';
                 });
                 
-                // 為每個主要部分生成PDF頁面
+                // 獲取所有天數卡片
+                const dayCards = document.querySelectorAll('.day-card');
+                
+                // 使用jsPDF
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
-                
-                // 獲取所有卡片
-                const cards = document.querySelectorAll('.card');
-                let pageNum = 1;
                 
                 // 添加封面
                 pdf.setFillColor(30, 60, 114);
@@ -1929,26 +1994,42 @@
                 pdf.setFontSize(28);
                 pdf.text("英國17天行程", 105, 120, { align: 'center' });
                 pdf.setFontSize(16);
-                pdf.text(tripData.subtitle, 105, 140, { align: 'center' });
+                pdf.text("2026年7月28日 - 8月13日", 105, 140, { align: 'center' });
                 pdf.setFontSize(12);
                 pdf.text(`最後更新: ${tripData.lastUpdated}`, 105, 160, { align: 'center' });
                 pdf.setTextColor(255, 126, 95);
                 pdf.text("旅遊行程計劃", 105, 180, { align: 'center' });
-                
-                pageNum++;
                 pdf.addPage();
                 
-                // 使用html2canvas將每個卡片轉換為圖片
-                for (let i = 0; i < cards.length; i++) {
-                    const card = cards[i];
-                    
-                    // 檢查是否需要新頁面
-                    if (i > 0 && i % 2 === 0) {
-                        pageNum++;
+                // 添加行程總覽頁（使用html2canvas確保中文字體正確）
+                const overviewCard = document.querySelector('.trip-overview');
+                const overviewCanvas = await html2canvas(overviewCard, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff'
+                });
+                
+                const imgWidth = 190;
+                const imgHeight = (overviewCanvas.height * imgWidth) / overviewCanvas.width;
+                const overviewImg = overviewCanvas.toDataURL('image/jpeg', 0.9);
+                pdf.addImage(overviewImg, 'JPEG', 10, 10, imgWidth, imgHeight);
+                
+                // 添加其他重要卡片（航班、預算等）
+                const importantCards = [
+                    document.querySelector('#editFlightOut').closest('.card'),
+                    document.querySelector('#editFlightIn').closest('.card'),
+                    document.querySelector('#editBudget').closest('.card'),
+                    document.querySelector('#editAccommodation').closest('.card')
+                ];
+                
+                for (let i = 0; i < importantCards.length; i++) {
+                    if (i % 2 === 0) {
                         pdf.addPage();
                     }
                     
-                    try {
+                    const card = importantCards[i];
+                    if (card) {
                         const canvas = await html2canvas(card, {
                             scale: 1.5,
                             useCORS: true,
@@ -1956,44 +2037,51 @@
                             backgroundColor: '#ffffff'
                         });
                         
-                        const imgData = canvas.toDataURL('image/jpeg', 0.9);
-                        const imgWidth = 190; // A4寬度減去邊距
-                        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                        const cardImg = canvas.toDataURL('image/jpeg', 0.9);
+                        const cardWidth = 190;
+                        const cardHeight = (canvas.height * cardWidth) / canvas.width;
                         
                         // 計算位置（每頁兩個卡片）
-                        const x = 10; // 左邊距
-                        let y;
+                        const x = 10;
+                        const y = i % 2 === 0 ? 20 : 150;
                         
-                        if (i % 2 === 0) {
-                            y = 20; // 第一個卡片的位置
-                        } else {
-                            y = 150; // 第二個卡片的位置
-                        }
-                        
-                        // 添加圖片到PDF
-                        pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
-                        
-                    } catch (error) {
-                        console.error(`處理卡片 ${i} 時出錯:`, error);
-                        // 如果無法生成圖片，添加文本替代
-                        const cardTitle = card.querySelector('.card-title span')?.textContent || `卡片 ${i+1}`;
-                        pdf.setFontSize(14);
-                        pdf.setTextColor(30, 60, 114);
-                        pdf.text(cardTitle, 15, 20 + (i % 2) * 130);
+                        pdf.addImage(cardImg, 'JPEG', x, y, cardWidth, cardHeight);
                     }
+                }
+                
+                // 為每一天創建一個PDF頁面
+                for (let i = 0; i < dayCards.length; i++) {
+                    const dayCard = dayCards[i];
                     
-                    // 如果是最後一個卡片或需要換頁
-                    if (i === cards.length - 1 || i % 2 === 1) {
-                        // 添加頁碼
-                        pdf.setFontSize(10);
-                        pdf.setTextColor(100, 100, 100);
-                        pdf.text(`第 ${pageNum} 頁`, 200, 290, { align: 'right' });
-                        
-                        if (i !== cards.length - 1) {
-                            pageNum++;
-                            pdf.addPage();
+                    // 新頁面
+                    pdf.addPage();
+                    
+                    // 使用html2canvas捕獲每日行程卡片
+                    const canvas = await html2canvas(dayCard, {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: '#ffffff',
+                        onclone: function(clonedDoc) {
+                            // 在克隆的文檔中設置字體
+                            clonedDoc.body.style.fontFamily = "'Microsoft JhengHei', 'Segoe UI', sans-serif";
                         }
-                    }
+                    });
+                    
+                    const dayImg = canvas.toDataURL('image/jpeg', 0.9);
+                    const dayWidth = 190;
+                    const dayHeight = (canvas.height * dayWidth) / canvas.width;
+                    
+                    // 居中顯示
+                    const x = 10;
+                    const y = 20;
+                    
+                    pdf.addImage(dayImg, 'JPEG', x, y, dayWidth, dayHeight);
+                    
+                    // 添加頁碼
+                    pdf.setFontSize(10);
+                    pdf.setTextColor(100, 100, 100);
+                    pdf.text(`第 ${i+3} 頁`, 200, 290, { align: 'right' });
                 }
                 
                 // 恢復隱藏的元素
@@ -2005,40 +2093,66 @@
                 if (wasEditMode) toggleEditMode();
                 
                 // 保存PDF
-                pdf.save(`英國旅遊行程-${new Date().toISOString().split('T')[0]}.pdf`);
+                const fileName = `英國17天行程-${new Date().toISOString().split('T')[0]}.pdf`;
+                pdf.save(fileName);
                 
                 exportBtn.innerHTML = '<i class="fas fa-file-pdf"></i> 導出PDF';
                 exportBtn.disabled = false;
                 
-                showNotification('PDF已成功導出，共' + pageNum + '頁');
+                showNotification('PDF已成功導出，共' + (dayCards.length + 5) + '頁');
                 
             } catch (error) {
                 console.error('PDF生成錯誤:', error);
                 
-                // 嘗試更簡單的方法
+                // 嘗試簡單的備份方法
                 try {
-                    // 使用html2canvas捕獲整個頁面
-                    const element = document.querySelector('.container');
-                    const canvas = await html2canvas(element, {
-                        scale: 1,
-                        useCORS: true,
-                        logging: false,
-                        backgroundColor: '#f8f9fa'
-                    });
+                    // 使用瀏覽器打印功能
+                    const printContent = document.querySelector('.container').cloneNode(true);
                     
-                    const imgData = canvas.toDataURL('image/jpeg', 0.9);
-                    const { jsPDF } = window.jspdf;
-                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    // 移除不需要的元素
+                    const elementsToRemove = printContent.querySelectorAll('.action-buttons, .edit-icon, .share-modal, .notification, .data-status, .footer, .map-container');
+                    elementsToRemove.forEach(el => el.remove());
                     
-                    const imgWidth = 210;
-                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    // 設置打印樣式
+                    printContent.style.width = '210mm';
+                    printContent.style.margin = '0 auto';
+                    printContent.style.padding = '20px';
                     
-                    pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
-                    pdf.save(`英國旅遊行程-簡單版-${new Date().toISOString().split('T')[0]}.pdf`);
+                    // 創建打印窗口
+                    const printWindow = window.open('', '_blank');
+                    printWindow.document.write(`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>英國17天行程</title>
+                            <style>
+                                body { font-family: 'Microsoft JhengHei', 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+                                .card { page-break-inside: avoid; margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; }
+                                .day-card { page-break-after: always; }
+                                @media print {
+                                    .card { box-shadow: none !important; }
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            ${printContent.innerHTML}
+                        </body>
+                        </html>
+                    `);
                     
-                    showNotification('PDF已導出（簡單版）');
+                    printWindow.document.close();
+                    printWindow.focus();
+                    
+                    // 延遲打印以確保內容加載
+                    setTimeout(() => {
+                        printWindow.print();
+                        printWindow.close();
+                    }, 1000);
+                    
+                    showNotification('正在準備打印...');
                 } catch (simpleError) {
-                    alert('PDF導出失敗，請確保網路連接正常並稍後再試。錯誤: ' + simpleError.message);
+                    console.error('打印錯誤:', simpleError);
+                    alert('PDF導出失敗，但您可以使用瀏覽器的打印功能（Ctrl+P）來保存行程。');
                 }
                 
                 exportBtn.innerHTML = '<i class="fas fa-file-pdf"></i> 導出PDF';
@@ -2085,7 +2199,7 @@
         
         // 更新數據狀態顯示
         function updateDataStatus() {
-            const hasData = localStorage.getItem('tripData_v2') || localStorage.getItem('tripData');
+            const hasData = localStorage.getItem('tripData_v4') || localStorage.getItem('tripData_v3') || localStorage.getItem('tripData_v2') || localStorage.getItem('tripData');
             dataStatus.textContent = hasData ? `數據已保存 (${tripData.lastUpdated})` : '無保存數據';
             dataStatus.style.backgroundColor = hasData ? '#4CAF50' : '#ff7e5f';
         }
